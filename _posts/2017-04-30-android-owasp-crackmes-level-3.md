@@ -173,10 +173,7 @@ LABEL_7:
 }
 ```
 
-
-
-** Native verification: **
-
+**Native verification:**
 
 ```c
 signed int __fastcall Java_sg_vantagepoint_uncrackable3_CodeCheck_bar(JNIEnv *jni, int self, int user_input)
@@ -225,7 +222,7 @@ LABEL_8:
 ```
 
 
-** The flag **
+**The flag:**
 
 The following python script generates the string needed to obtain the message of success:
 ```python
@@ -253,10 +250,10 @@ The flag is: grxcnm3|}ayc3mrorg*amrzd
 The flag is: *i&r9.~%;14xm|%,?>l1 i$u
 ```
 
-![Flag1](https://enovella.github.io/static/img/_posts/owasp-level3-1.png)
-![Flag2](https://enovella.github.io/static/img/_posts/owasp-level3-2.png)
+![https://github.com/enovella/enovella.github.io/blob/master/static/img/_posts/owasp-level3-1.png](Flag1)
+![https://github.com/enovella/enovella.github.io/blob/master/static/img/_posts/owasp-level3-1.png](Flag2)
 
-** References: **
+**References:**
 
 * [https://github.com/OWASP/owasp-mstg/blob/master/OMTG-Files/02_Crackmes/List_of_Crackmes.md](List of OWASP crackmes)
-* TODO
+
