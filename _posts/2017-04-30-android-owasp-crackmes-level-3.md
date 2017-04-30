@@ -43,6 +43,84 @@ First of all, several files need to be unpacked from the APK to be reverse engin
 * `./lib/armeabi-v7a/libfoo.so` is a native library that contains ARM assembly code. We refer to this when talking about native code during this post (feel free to use the x86 code if preferred) 
 * `./classes.dex` contains the Java Dalvik bytecode
 
+
+**Java security checks**
+
+```java
+    protected void onCreate(Bundle savedInstanceState) {
+        this.verifyLibs();
+        this.init("pizzapizzapizzapizzapizz".getBytes());
+        new AsyncTask() {
+            protected Object doInBackground(Object[] arg2) {
+                return this.doInBackground(((Void[])arg2));
+            }
+
+            protected String doInBackground(Void[] params) {
+                while(!Debug.isDebuggerConnected()) {
+                    SystemClock.sleep(100);
+                }
+
+                return null;
+            }
+
+            protected void onPostExecute(Object arg1) {
+                this.onPostExecute(((String)arg1));
+            }
+
+            protected void onPostExecute(String msg) {
+                MainActivity.this.showDialog("Debugger detected!");
+                System.exit(0);
+            }
+        }.execute(new Void[]{null, null, null});
+        if((RootDetection.checkRoot1()) || (RootDetection.checkRoot2()) || (RootDetection.checkRoot3())
+                 || (IntegrityCheck.isDebuggable(this.getApplicationContext())) || MainActivity.tampered
+                 != 0) {
+            this.showDialog("Rooting or tampering detected.");
+        }
+
+        this.check = new CodeCheck();
+        super.onCreate(savedInstanceState);
+        this.setContentView(0x7F04001B);
+    }
+```
+
+**JNI calls: From Java to native code**
+
+The main activity of the Uncrackable level 3 challenge has the interesting points to discuss:
+
+* Hardcoded keys in the code. `xorkey` has a plaintext key, `"pizzapizzapizzapizzapizz"``` that will be used to solve the challenge
+* The loading of the native library `libfoo.so` and declaration of two native methods in the Java side: `baz()` and `init()`
+* Variables and class fields to keep track if tampering is detected
+
+
+The main activity gets decompiled as follows:
+```java
+public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "UnCrackable3";
+    private CodeCheck check;
+    Map crc;
+    static int tampered = 0;
+    private static final String xorkey = "pizzapizzapizzapizzapizz";
+
+    static {
+        MainActivity.tampered = 0;
+        System.loadLibrary("foo");
+    }
+
+    public MainActivity() {
+        super();
+    }
+
+    private native long baz() {
+    }
+
+    private native void init(byte[] xorkey) {
+    }
+
+    //<REDACTED>
+ }
+```
+
 **Native constructor: Section `.init_array`**
 
  An ELF binary contains a section called `.init_array` which holds the pointers to functions that will be executed when the program starts. If we observe what this ARM shared object has in its constructor, then we can see the following function pointer `sub_2788` at offset `0x4de8`: (in IDA Pro uses the shortcut `ctrl`+`s` for showing sections)
