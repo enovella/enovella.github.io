@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-I am freelance developer. Currently doing more in backend, focused in Python and Django.
+I am security analyst at Riscure. Currently evaluation NFC mobile payments (HCE), content protection and embedded devices.
 
 email: ednolo [at] inf.upv.es 
 
