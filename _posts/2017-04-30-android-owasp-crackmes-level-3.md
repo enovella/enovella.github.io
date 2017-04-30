@@ -11,7 +11,7 @@ categories: [android, reverse]
 *"An Android crackme arose from hell. It doesn't make prisoners"*
 </div>
 
-This post details a way of solving the level 3 of Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know about binary disassemblers, decompilers, Dalvik bytecode and crackmes before reading this post. 
+This post details a way of solving the level 3 of Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know about binary disassemblers, decompilers, bytecode and crackmes before reading this post. 
 
 **Requirements: What do we need?**
 
@@ -27,7 +27,7 @@ This post details a way of solving the level 3 of Android crackmes released by t
 * There are two previous levels with less difficulty, I would recommend to take a look at the challenges or write-ups first of reading this one
 * Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag
 * The Android phone does not need to be rooted. If rooted, root checks should be overcome as well
-* The native layer is where important code is executed. Do not be distracted with the Java bytecode (`Dalvik`)
+* The native layer is where important code is executed. Do not be distracted with the Java bytecode
 * Static reverse engineering is enough to obtain the secrets to pass the string verification. Therefore, all security checks do not need to be circumvented
 * Dynamic binary instrumentation is not required although it could help to speed up the flag extraction. This write-up does not utilize this technique
 * `Hex-rays` decompiler was used due to the quick decompilation of ARM code. However, `radare2` can also do a great job when disassembling ARM code.
@@ -41,10 +41,11 @@ This challenge can be solved in many different ways. Though, I decided to approa
 First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
 * `./lib/armeabi-v7a/libfoo.so` is a native library that contains ARM assembly code. We refer to this when talking about native code during this post (feel free to use the x86 code if preferred) 
-* `./classes.dex` contains the Java Dalvik bytecode
+* `./classes.dex` contains the Java bytecode
 
-***JAVA side***
-
+# JAVA side
+## JAVA side
+### JAVA side
 **Java security checks**
 
 ```java
