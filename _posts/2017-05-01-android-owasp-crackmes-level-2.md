@@ -51,13 +51,13 @@ signed int __fastcall Java_sg_vantagepoint_uncrackable2_CodeCheck_bar(JNIEnv *jn
   if ( codecheck == 1 )
   {
     _aeabi_memclr(&v8 + 2, 18);
-    flag = 'nahT';
-    v8 = 'f sk';
-    v9 = 'a ro';
-    v10 = 't ll';
-    v11 = 'f eh';
-    v12 = 'si';
-    v13 = 'h';
+    flag = "nahT";
+    v8 = "f sk";
+    v9 = "a ro";
+    v10 = "t ll";
+    v11 = "f eh";
+    v12 = "si";
+    v13 = "h";
     input = ((*jni)->GetByteArrayElements)(jni, src_input, 0);
     if ( ((*jni)->GetArrayLength)(jni, src_input) == 23 && !strncmp(input, &flag, 23u) )
       goto SUCCESS;
