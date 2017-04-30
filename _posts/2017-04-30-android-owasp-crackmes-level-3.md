@@ -9,41 +9,21 @@ This post details a way of solving the level 3 of Android crackmes released by t
 
 **Requirements**
 
-* Android phone or emulator. 
-* 
+* Android phone (non-rooted) or emulator (rooted)
+* Binary disassembler. (IDA Pro and Hex-rays decompiler or radare2)
+* Android decompiler of your preference. (JEB1, BytecodeViewer, Jadx-gui,...)
+* Basic understanding of the JNI interface
 
-**Input/Output**
-
-* [time limit] 4000ms (py)
-* [input] integer n (A positive integer).
-
-**_Constraints:_**
-
-* 1 ≤ n ≤ 106.
-
-* **[output] integer**
 
 **My Solution:**
 
-The challenge can be solved in many different ways. Though, I decided to approach it in a static way without debugging or instrumentation. This means, just pure static analysis of the Java and native code.
-
-The Java and native code is managed by the JNI interface. 
-```c
-int *__fastcall Java_sg_vantagepoint_uncrackable3_MainActivity_init(JNIEnv *jni, int self, const char *src_xorkey)
-{
-  int *result; // r0@1
-
-  anti_debug();
-  strncpy(xorkey, src_xorkey, 25u);
-  result = &codecheck;
-  ++codecheck;
-  return result;
-}
-```
+The challenge can be solved in many different ways. Though, I decided to approach it in a static way without debugging or instrumenting the Android app. This means, just pure static analysis of the Java and native code. The most probably is that several write-ups are released later on with different solutions. Personally, I have focused only in the native code of the APK.
 
 
-**Native constructors: .init.array section**
- The `.init_array` section in an ELF binary contains the pointers to functions which will be executed when program starts. If we observe what this ARM shared object holds in its constructor then we can see the following function pointer `sub_2788` at offset `0x4de8`:
+
+**Native constructors: `.init.array` section**
+
+ The `.init_array` section in an ELF binary contains the pointers to functions which will be executed when the program starts. If we observe what this ARM shared object holds in its constructor then we can see the following function pointer `sub_2788` at offset `0x4de8`:
 
 ```c
 .init_array:00004DE8 ; ===========================================================================
@@ -124,6 +104,22 @@ ERROR:
   goodbye();
 }
 ```
+
+
+The Java and native code are communicated through the JNI interface. 
+```c
+int *__fastcall Java_sg_vantagepoint_uncrackable3_MainActivity_init(JNIEnv *jni, int self, const char *src_xorkey)
+{
+  int *result; // r0@1
+
+  anti_debug();
+  strncpy(xorkey, src_xorkey, 25u);
+  result = &codecheck;
+  ++codecheck;
+  return result;
+}
+```
+
 
 **Native anti-debugging checks:**
 
