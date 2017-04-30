@@ -9,16 +9,27 @@ This post details a way of solving the level 3 of Android crackmes released by t
 
 **Requirements**
 
-* Android phone (non-rooted) or emulator (rooted)
-* Binary disassembler. (IDA Pro and Hex-rays decompiler or radare2)
-* Android decompiler of your preference. (JEB, BytecodeViewer, Jadx-gui,...)
+* Android phone or emulator to run the crackme APK
+* Binary disassembler to analyze assembly code and/or ARM decompiler to get C-like code. (IDA Pro and Hex-rays decompiler or radare2)
+* Android decompiler of your preference to obtain Java code. (BytecodeViewer, Jadx-gui, JEB, JD-GUI,...)
 * Basic understanding of the JNI interface
 
 <div style="text-align:center" markdown="1">
 ![0](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-logo.jpg "OWASP Logo")
 {:.image-caption}
-*An Android crackme arose from hell. It doesn't make prisoners*
+*"An Android crackme arose from hell. It doesn't make prisoners"*
 </div>
+
+**Assumptions and highlights before get started:**
+
+* Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level
+* The Android phone does not need to be rooted. If rooted, root checks should be overcome as well
+* Static reverse engineering is enough to obtain the secrets to pass the string verification and avoid bypassing security checks
+* Dynamic binary instrumentation is not required although it could help to speed up the flag extraction
+* The native layer is where important code is executed. Do not be distracted with the Java bytecode (Dalvik)
+* Hex-rays decompiler was used due to the quick decompilation of ARM code but radare2 can also do a great job when disassembling ARM code
+* There are two previous levels with less difficulty, I would recommend to take a look at the challenges or write-ups first of reading this one
+
 
 **My Solution:**
 
