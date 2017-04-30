@@ -14,7 +14,7 @@ This post details a way of solving the level 3 of Android crackmes released by t
 * Android decompiler of your preference. (JEB, BytecodeViewer, Jadx-gui,...)
 * Basic understanding of the JNI interface
 
-![0](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-logo.jpg "OWASP Logo")
+->![0](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-logo.jpg "OWASP Logo")<-
 
 **My Solution:**
 
@@ -251,9 +251,9 @@ The flag is: grxcnm3|}ayc3mrorg*amrzd
 The flag is: *i&r9.~%;14xm|%,?>l1 i$u
 ```
 
-![1](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-1.png "Flag 1")
+->![1](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-1.png "Flag 1")<-
 
-![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-2.png "Flag 2")
+->![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-2.png "Flag 2")<-
 
 
 **References:**
