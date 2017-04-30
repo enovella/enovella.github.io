@@ -44,6 +44,7 @@ First of all, several files need to be unpacked from the APK to be reverse engin
 * `./classes.dex` contains the Java Dalvik bytecode
 
 ***JAVA side***
+
 **Java security checks**
 
 ```java
@@ -120,6 +121,93 @@ public class MainActivity extends AppCompatActivity {
     //<REDACTED>
  }
 ```
+
+
+**Integrity checks:**
+
+```java
+package sg.vantagepoint.util;
+
+import android.content.*;
+
+public class IntegrityCheck
+{
+    public static boolean isDebuggable(final Context context) {
+        return (0x2 & context.getApplicationContext().getApplicationInfo().flags) != 0x0;
+    }
+}
+```
+
+**Rooting checks:**
+
+The Java package `sg.vantagepoint.util` has a class called `RootDetection` that performs up to three checks to detect if the device running the application is potentially rooted. These three checks are mainly:
+
+* `checkRoot1()` that checks the existence of the binary `su` in the file system.
+* `checkRoot2()` that checks the BUILD tag for `test-keys`. By default, stock Android ROMs from Google are built with release-keys tags. If `test-keys` are present, this can mean that the Android build on the device is either a developer build or an unofficial Google build. 
+* `checkRoot2()` that checks the existence of dangerous root applications, configuration files and daemons.
+
+The Java code responsible for performing root checks is as follows:
+```java
+package sg.vantagepoint.util;
+
+import android.os.Build;
+import java.io.File;
+
+public class RootDetection {
+    public RootDetection() {
+        super();
+    }
+
+    public static boolean checkRoot1() {
+        boolean bool = false;
+        String[] array_string = System.getenv("PATH").split(":");
+        int i = array_string.length;
+        int i1 = 0;
+        while(i1 < i) {
+            if(new File(array_string[i1], "su").exists()) {
+                bool = true;
+            }
+            else {
+                ++i1;
+                continue;
+            }
+
+            return bool;
+        }
+
+        return bool;
+    }
+
+    public static boolean checkRoot2() {
+        String string0 = Build.TAGS;
+        boolean bool = string0 == null || !string0.contains("test-keys") ? false : true;
+        return bool;
+    }
+
+    public static boolean checkRoot3() {
+        boolean bool = true;
+        String[] array_string = new String[]{"/system/app/Superuser.apk", "/system/xbin/daemonsu", "/system/etc/init.d/99SuperSUDaemon", 
+                "/system/bin/.ext/.su", "/system/etc/.has_su_daemon", "/system/etc/.installed_su_daemon", 
+                "/dev/com.koushikdutta.superuser.daemon/"};
+        int i = array_string.length;
+        int i1 = 0;
+        while(true) {
+            if(i1 >= i) {
+                return false;
+            }
+            else if(!new File(array_string[i1]).exists()) {
+                ++i1;
+                continue;
+            }
+
+            return bool;
+        }
+
+        return false;
+    }
+}
+```
+
 
 
 ***NATIVE side***
