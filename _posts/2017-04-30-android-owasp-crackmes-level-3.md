@@ -14,7 +14,11 @@ This post details a way of solving the level 3 of Android crackmes released by t
 * Android decompiler of your preference. (JEB, BytecodeViewer, Jadx-gui,...)
 * Basic understanding of the JNI interface
 
-![0](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-logo.jpg "OWASP Logo"){: .center-image }
+<div style="text-align:center" markdown="1">
+![0](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-logo.jpg "OWASP Logo")
+{:.image-caption}
+*An Android crackme arose from hell. It doesn't make prisoners*
+</div>
 
 **My Solution:**
 
@@ -254,11 +258,13 @@ The flag is: *i&r9.~%;14xm|%,?>l1 i$u
 <div style="text-align:center" markdown="1">
 ![1](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-1.png "Flag 1"){: .center-image }
 {:.image-caption}
-*The caption for my image*
+*Flag1*
 </div>
 
 <div style="text-align:center" markdown="1">
 ![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-2.png "Flag 2"){: .center-image }
+{:.image-caption}
+*Flag2*
 </div>
 
 
