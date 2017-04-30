@@ -50,5 +50,5 @@ This challenge can be solved in many different ways. Though, I decided to approa
 
 **References:**
 
-* [List of OWASP crackmes](https://github.com/OWASP/owasp-mstg/blob/master/OMTG-Files/02_Crackmes/List_of_Crackmes.md)
+* [List of OWASP crackmes](https://github.com/OWASP/owasp-mstg/tree/master/Crackmes)
 

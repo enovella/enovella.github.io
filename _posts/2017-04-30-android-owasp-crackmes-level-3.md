@@ -454,5 +454,5 @@ The flag is: *i&r9.~%;14xm|%,?>l1 i$u
 
 **References:**
 
-* [List of OWASP crackmes](https://github.com/OWASP/owasp-mstg/blob/master/OMTG-Files/02_Crackmes/List_of_Crackmes.md)
+* [List of OWASP crackmes](https://github.com/OWASP/owasp-mstg/blob/master/Crackmes/README.md)
 
