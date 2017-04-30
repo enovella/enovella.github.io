@@ -251,9 +251,15 @@ The flag is: grxcnm3|}ayc3mrorg*amrzd
 The flag is: *i&r9.~%;14xm|%,?>l1 i$u
 ```
 
+<div style="text-align:center" markdown="1">
 ![1](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-1.png "Flag 1"){: .center-image }
+{:.image-caption}
+*The caption for my image*
+</div>
 
+<div style="text-align:center" markdown="1">
 ![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-2.png "Flag 2"){: .center-image }
+</div>
 
 
 **References:**
