@@ -43,7 +43,7 @@ First of all, several files need to be unpacked from the APK to be reverse engin
 * `./lib/armeabi-v7a/libfoo.so` is a native library that contains ARM assembly code. We refer to this when talking about native code during this post (feel free to use the x86 code if preferred) 
 * `./classes.dex` contains the Java Dalvik bytecode
 
-
+*JAVA side*
 **Java security checks**
 
 ```java
@@ -121,6 +121,8 @@ public class MainActivity extends AppCompatActivity {
  }
 ```
 
+
+*NATIVE side*
 **Native constructor: Section `.init_array`**
 
  An ELF binary contains a section called `.init_array` which holds the pointers to functions that will be executed when the program starts. If we observe what this ARM shared object has in its constructor, then we can see the following function pointer `sub_2788` at offset `0x4de8`: (in IDA Pro uses the shortcut `ctrl`+`s` for showing sections)
