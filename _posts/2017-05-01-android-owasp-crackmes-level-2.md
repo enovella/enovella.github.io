@@ -32,7 +32,7 @@ This post details a way of solving the level 2 of Android crackmes released by t
 
 This challenge can be solved in many different ways. Though, I decided to approach it in dynamic way by performing dynamic binary instrumentation with `Frida`. 
 
-```javascript
+```java
 Java.perform(function () {
 	send("Starting hooks OWASP uncrackable2...");
 
