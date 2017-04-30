@@ -11,7 +11,7 @@ This post details a way of solving the level 3 of Android crackmes released by t
 
 * Android phone (non-rooted) or emulator (rooted)
 * Binary disassembler. (IDA Pro and Hex-rays decompiler or radare2)
-* Android decompiler of your preference. (JEB1, BytecodeViewer, Jadx-gui,...)
+* Android decompiler of your preference. (JEB, BytecodeViewer, Jadx-gui,...)
 * Basic understanding of the JNI interface
 
 
@@ -250,8 +250,9 @@ The flag is: grxcnm3|}ayc3mrorg*amrzd
 The flag is: *i&r9.~%;14xm|%,?>l1 i$u
 ```
 
-![https://github.com/enovella/enovella.github.io/blob/master/static/img/_posts/owasp-level3-1.png](Flag1)
-![https://github.com/enovella/enovella.github.io/blob/master/static/img/_posts/owasp-level3-1.png](Flag2)
+![1](https://github.com/enovella/enovella.github.io/blob/master/static/img/_posts/owasp-level3-1.png "Flag 1")
+
+![2](https://github.com/enovella/enovella.github.io/blob/master/static/img/_posts/owasp-level3-2.png "Flag 2")
 
 **References:**
 
