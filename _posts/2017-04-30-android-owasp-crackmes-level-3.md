@@ -11,14 +11,15 @@ categories: [android, reverse]
 *"An Android crackme arose from hell. It doesn't make prisoners"*
 </div>
 
-This post details a way of solving the level 3 of Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know about binary disassemblers, decompilers, Dalvik bytecode and crackmes.
+This post details a way of solving the level 3 of Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know about binary disassemblers, decompilers, Dalvik bytecode and crackmes before reading this post. 
 
-**Requirements**
+**Requirements: What do we need?**
 
 * Android phone or emulator to run the crackme APK
 * Binary disassembler to analyze assembly code and/or ARM decompiler to get C-like code. (IDA Pro and Hex-rays decompiler or radare2)
 * Android decompiler of your preference to obtain Java code. (BytecodeViewer, Jadx-gui, JEB, JD-GUI,...)
 * Very basic understanding of the JNI interface
+* Time and a bit of thinking
 
 
 **Assumptions and highlights:**
@@ -35,11 +36,11 @@ This post details a way of solving the level 3 of Android crackmes released by t
 
 **My Solution:**
 
-The challenge can be solved in many different ways. Though, I decided to approach it in a static way without debugging or instrumenting the Android app. This means, just pure static analysis of the Java and native code. The most probably is that several write-ups are released later on with different solutions. Personally, I have focused only in the native code of the APK.
+This challenge can be solved in many different ways. Though, I decided to approach it in a static way without debugging or instrumenting the Android app. This means, just pure static analysis of the Java and native code. 
 
-The several files need to be unpacked from the APK. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, several files are very important to follow this post. These files are:
+First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
-* `./lib/armeabi-v7a/libfoo.so` is a shared object and contains ARM assembly code. We refer to this when talking about native code (feel free to use the x86 code if preferred) 
+* `./lib/armeabi-v7a/libfoo.so` is a native library that contains ARM assembly code. We refer to this when talking about native code during this post (feel free to use the x86 code if preferred) 
 * `./classes.dex` contains the Java Dalvik bytecode
 
 **Native constructor: Section `.init_array`**
