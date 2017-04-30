@@ -250,9 +250,9 @@ The flag is: grxcnm3|}ayc3mrorg*amrzd
 The flag is: *i&r9.~%;14xm|%,?>l1 i$u
 ```
 
-![1](https://github.com/enovella/enovella.github.io/blob/master/static/img/_posts/owasp-level3-1.png "Flag 1")
+![](../static/img/_posts/owasp-level3-1.png "Flag 1")
 
-![2](https://github.com/enovella/enovella.github.io/blob/master/static/img/_posts/owasp-level3-2.png "Flag 2")
+![](../static/img/_posts/owasp-level3-2.png "Flag 2")
 
 **References:**
 
