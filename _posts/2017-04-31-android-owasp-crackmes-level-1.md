@@ -32,8 +32,7 @@ This post details a way of solving the level 1 of Android crackmes released by t
 
 This challenge can be solved in many different ways. Though, I decided to approach it in dynamic way by performing dynamic binary instrumentation with `Frida`. 
 
-```javascript
-
+```java
 Java.perform(function () {
   send("Starting hooks OWASP uncrackable1...");
 
@@ -92,7 +91,7 @@ Java.perform(function () {
 
   var rootcheck3 = Java.use("sg.vantagepoint.a.c");
   rootcheck3.c.overload().implementation = function() {
-    send("sg.vantagepoint.a.c.c()Z  Root check 3 HIT! Root packages");
+    send("sg.vantagepoint.a.c.c()Z  Root check 3 HIT!  Root packages");
     return 0;
   };
 
