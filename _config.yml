@@ -1,0 +1,55 @@
+title: Computer Issues
+description: My Personal Stack Problems
+author: Eduardo Novella
+github: https://github.com/enovella
+about: I am security analyst at Riscure. Currently working on Android security in the payment (HCE), content protection (PayTV) and embedded markets.
+disqus_shortname: computerissues
+google_analytics: UA-XXXXXXXX-Y
+avatar_url: /static/img/avatar.png
+
+enableTags: true
+tagarray: []
+
+collections:
+  project:
+    output: true
+    permalink: /project/:path/
+
+social:
+    # - icon: fa-facebook
+    #   link: "#"
+    - icon: fa-twitter
+      link: "https://twitter.com/enovella_"
+    - icon: fa-linkedin
+      link: "https://www.linkedin.com/in/eduardo-novella"
+    # - icon: fa-stack-exchange
+    #   link: "#"
+    - icon: fa-github
+      link: "https://github.com/enovella"
+
+share:
+  twitter_username: enovella_
+  # fb_appid: 1749788565247320
+
+urls:
+    - text: About Me
+      url: /about/
+    - text: My Projects
+      url: /projects/
+    - text: XML Feed
+      url: /feed.xml
+
+url: "https://enovella.github.io"
+baseurl: ""
+paginate: 20
+per_page: 20
+paginate_path: "/page/:num/"
+markdown: kramdown
+gems:
+  - jekyll-paginate
+  - jekyll-gist
+
+compress_html:
+  clippings: all
+  comments: ["<!-- ", " -->"]
+  endings: all
