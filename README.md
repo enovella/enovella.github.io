@@ -1,2 +1,0 @@
-# enovella.github.io
-Blog
