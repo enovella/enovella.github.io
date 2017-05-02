@@ -419,31 +419,24 @@ The following python script generates the string needed to obtain the message of
 sec_xor = "1d0811130f1749150d0003195a1d1315080e5a0017081314".decode("hex")
 # Java value: "pizzapizzapizzapizzapizz"
 xorkey1 = "7a7a6970617a7a6970617a7a6970617a7a6970617a7a6970".decode("hex")
-xorkey2 = "7a7a6970617a7a6970617a7a6970617a7a6970617a7a6970"
 
 
 def xor_strings(xs, ys):
     return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(xs, ys))
 
 xored1 = xor_strings(sec_xor,xorkey1)
-xored2 = xor_strings(sec_xor,xorkey2)
+
 
 print "The flag is: " + xored1
-print "The flag is: " + xored2
+
 ```
 
 Running the script we obtain two possible flags:
 ```bash
 [21:07 edu@ubuntu level3] > python getflag.py 
 The flag is: grxcnm3|}ayc3mrorg*amrzd
-The flag is: *i&r9.~%;14xm|%,?>l1 i$u
 ```
 
-<div style="text-align:center" markdown="1">
-![1](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-1.png "Flag 1"){: .center-image }
-{:.image-caption}
-*Flag1*
-</div>
 
 <div style="text-align:center" markdown="1">
 ![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-2.png "Flag 2"){: .center-image }
