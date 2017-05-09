@@ -16,8 +16,16 @@ This post details a way of solving the level 3 of the Android crackmes released 
 **Requirements: What do we need?**
 
 * Android phone or emulator to run the crackme APK.
-* Binary disassembler to analyze assembly code and/or ARM decompiler to get C-like code. (`IDA Pro` with `Hex-rays` decompiler or `radare2` with `retdec`/`snowman` decompilers).
-* Android decompiler of your preference to obtain Java code. (`BytecodeViewer`, `Jadx-gui`, `Procyon`, `JEB`, `JD-GUI`,...).
+* Binary disassembler to analyze assembly code and/or ARM decompiler to get C-like code. For instance:
+    * `IDA Pro` with `Hex-rays` decompiler.
+    * `radare2` with `retdec`/`snowman` decompilers.
+* Android decompiler of your preference to obtain Java code. For instance:
+    * `BytecodeViewer` (including various decompilers such as `Procyon`, `JD-GUI`, `CFR`,...).
+    * `Jadx-gui`.
+    * `JEB`.
+* Dynamic binary instrumentation framework of your choice. 
+    - `Frida`. 
+    - `Xposed`.
 * Very basic understanding of the JNI interface.
 * Time and a bit of thinking.
 
@@ -27,10 +35,9 @@ This post details a way of solving the level 3 of the Android crackmes released 
 * There are two previous levels with less difficulty, I would first recommend to take a look at the other write-ups before reading this one.
 * Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
 * The Android phone does not need to be rooted. If rooted, root checks should be overcome as well.
-* The native layer is where important code is executed. Do not be distracted with the Java bytecode.
-* Static reverse engineering is enough to obtain the secrets to pass the string verification. Therefore, all security checks do not need to be circumvented.
-* Dynamic binary instrumentation is not required although it could help to speed up the flag extraction. This write-up does not utilize this technique
-* `Hex-rays` decompiler was used due to the quick decompilation of ARM code. However, `radare2` can also do a great job when disassembling ARM code.
+* The native layer is where the important code is executed. Do not be distracted with the Java bytecode.
+* The strategy was to perform dynamic binary instrumentation (DBI) to overcome the anti-DBI and -debugging checks.
+* `Hex-rays` decompiler was used because the reliable decompilation of ARM code. However, `radare2` plus open-source decompilers can also do a great job.
 
 
 
