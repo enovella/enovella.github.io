@@ -11,34 +11,48 @@ categories: [android, reverse]
 *"An Android crackme arose from hell. It doesn't make prisoners"*
 </div>
 
-This post details a way of solving the level 3 of the Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you have heard about binary disassemblers, decompilers, bytecode and crackmes before reading this post. Anyhow, you can go further with the reading although some steps will be omitted.
+This post details a way of solving the level 3 of the Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know a bit about binary disassemblers, decompilers, bytecode and crackmes before reading this post. Anyhow, you can go further with the reading although some steps will be omitted.
 
-**Requirements: What do we need?**
+**Set-up:**
+
+The following list illustrates different tools that could be used with the same purpose. Feel free to pick the ones you can work with more comfortable. 
 
 * Android phone or emulator to run the crackme APK.
-* Binary disassembler to analyze assembly code and/or ARM decompiler to get C-like code. For instance:
-    * `IDA Pro` with `Hex-rays` decompiler.
-    * `radare2` with `retdec`/`snowman` decompilers.
-* Android decompiler of your preference to obtain Java code. For instance:
-    * `BytecodeViewer` (including various decompilers such as `Procyon`, `JD-GUI`, `CFR`,...).
-    * `Jadx-gui`.
-    * `JEB`.
-* Dynamic binary instrumentation framework of your choice. 
+* Reverse-engineering: 
+    - Disassemblers:
+        + `Radare2` from git.
+        + `IDA Pro`.
+    - Decompilers:
+        + Native code: 
+            * `Hex-rays`.
+            * `Retdec`.
+            * `Snowman`.
+        + Java bytecode:
+            * `BytecodeViewer` (including various decompilers such as `Procyon`, `JD-GUI`, `CFR`,...).
+            * `Jadx-gui`.
+            * `JEB`.
+* Dynamic binary instrumentation (DBI): 
     - `Frida`. 
     - `Xposed`.
-* Very basic understanding of the JNI interface.
-* Time and a bit of thinking.
+
+My selection of tools was as such; Frida for performing DBI, Hexrays for native decompilation and BytecodeViewer with Procyon for Java decompilation. Hex-rays decompiler was used because its reliable decompilation on ARM code. However, `Radare2` plus open-source decompilers can also do a great job.
 
 
-**Assumptions and highlights:**
+**Highlights:**
 
 * There are two previous levels with less difficulty, I would first recommend to take a look at the other write-ups before reading this one.
 * Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
-* The Android phone does not need to be rooted. If rooted, root checks should be overcome as well.
+* The Android phone needs to be rooted. 
 * The native layer is where the important code is executed. Do not be distracted with the Java bytecode.
 * The strategy was to perform dynamic binary instrumentation (DBI) to overcome the anti-DBI and -debugging checks.
-* `Hex-rays` decompiler was used because the reliable decompilation of ARM code. However, `radare2` plus open-source decompilers can also do a great job.
 
+**Possibles solutions:**
+This challenge could be solved in many ways. The application hides a secret within the native library (`libfoo.so`). My initial ideas were performing:
+
+* static reverse engineering of the Java and native code plus code emulation with `Unicorn`.
+* static reverse engineering of the Java and native code plus symbolic execution by using `angr`.
+* static reverse engineering plus dynamic analysis by using `Frida`.
+* patching Java and native code to NOP out all the security checks using `Radare2`.
 
 
 **My Solution:**
