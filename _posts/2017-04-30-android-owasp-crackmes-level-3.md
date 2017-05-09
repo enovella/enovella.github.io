@@ -11,24 +11,24 @@ categories: [android, reverse]
 *"An Android crackme arose from hell. It doesn't make prisoners"*
 </div>
 
-This post details a way of solving the level 3 of Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know about binary disassemblers, decompilers, bytecode and crackmes before reading this post. 
+This post details a way of solving the level 3 of the Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you have heard about binary disassemblers, decompilers, bytecode and crackmes before reading this post. Anyhow, you can go further with the reading although some steps will be omitted.
 
 **Requirements: What do we need?**
 
-* Android phone or emulator to run the crackme APK
-* Binary disassembler to analyze assembly code and/or ARM decompiler to get C-like code. (IDA Pro and Hex-rays decompiler or radare2)
-* Android decompiler of your preference to obtain Java code. (BytecodeViewer, Jadx-gui, JEB, JD-GUI,...)
-* Very basic understanding of the JNI interface
-* Time and a bit of thinking
+* Android phone or emulator to run the crackme APK.
+* Binary disassembler to analyze assembly code and/or ARM decompiler to get C-like code. (`IDA Pro` with `Hex-rays` decompiler or `radare2` with `retdec`/`snowman` decompilers).
+* Android decompiler of your preference to obtain Java code. (`BytecodeViewer`, `Jadx-gui`, `Procyon`, `JEB`, `JD-GUI`,...).
+* Very basic understanding of the JNI interface.
+* Time and a bit of thinking.
 
 
 **Assumptions and highlights:**
 
-* There are two previous levels with less difficulty, I would recommend to take a look at the challenges or write-ups first of reading this one
-* Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag
-* The Android phone does not need to be rooted. If rooted, root checks should be overcome as well
-* The native layer is where important code is executed. Do not be distracted with the Java bytecode
-* Static reverse engineering is enough to obtain the secrets to pass the string verification. Therefore, all security checks do not need to be circumvented
+* There are two previous levels with less difficulty, I would first recommend to take a look at the other write-ups before reading this one.
+* Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
+* The Android phone does not need to be rooted. If rooted, root checks should be overcome as well.
+* The native layer is where important code is executed. Do not be distracted with the Java bytecode.
+* Static reverse engineering is enough to obtain the secrets to pass the string verification. Therefore, all security checks do not need to be circumvented.
 * Dynamic binary instrumentation is not required although it could help to speed up the flag extraction. This write-up does not utilize this technique
 * `Hex-rays` decompiler was used due to the quick decompilation of ARM code. However, `radare2` can also do a great job when disassembling ARM code.
 
@@ -90,9 +90,9 @@ First of all, several files need to be unpacked from the APK to be reverse engin
 
 The main activity of the Uncrackable level 3 challenge has the interesting points to discuss:
 
-* Hardcoded keys in the code. `xorkey` has a plaintext key, `"pizzapizzapizzapizzapizz"``` that will be used to solve the challenge
-* The loading of the native library `libfoo.so` and declaration of two native methods in the Java side: `baz()` and `init()`
-* Variables and class fields to keep track if tampering is detected
+* Hardcoded keys in the code. `xorkey` has a plaintext key, `"pizzapizzapizzapizzapizz"``` that will be used to solve the challenge.
+* The loading of the native library `libfoo.so` and declaration of two native methods in the Java side: `baz()` and `init()`.
+* Variables and class fields to keep track if tampering is detected.
 
 
 The main activity gets decompiled as follows:
