@@ -76,58 +76,103 @@ First of all, several files need to be unpacked from the APK to be reverse engin
 * `./classes.dex` contains the Java bytecode.
 * `./lib/arm64-v8a/libfoo.so` is a native library that contains ARM64 assembly code. We refer to this when talking about native code during this post (feel free to use the x86/ARM32 code if preferred).
 
-# Security checks within the Uncrackable Level3:
+**Security checks within Uncrackable Level3:**
 We find the following protections on the mobile application:
-- [ ] Java anti-DBI
-- [x] Java anti-debugging
-- [x] Java integrity checks
-- [x] Java obfuscation (Weak)
-- [x] Java root checks
-- [ ] Native obfuscation (a bit of symbol stripping)
-- [ ] Native root checks
-- [x] Native anti-DBI
-- [x] Native anti-debugging
+- Java anti-debugging
+- Java integrity checks
+- Java obfuscation (Weak)
+- Java root checks
+- Native anti-DBI
+- Native anti-debugging
+
+The following security mechanisms were not found within the application:
+- Java anti-DBI
+- Native obfuscation (a bit of symbol stripping)
+- Native root checks
 
 ## JAVA side
 
 **Java security checks**
 
+The following Java code snippet was obtained by decompiling the main class of the uncrackable Level3. This contains root and debugger detector. The decompiled code is as follows:
+
 ```java
-    protected void onCreate(Bundle savedInstanceState) {
-        this.verifyLibs();
-        this.init("pizzapizzapizzapizzapizz".getBytes());
-        new AsyncTask() {
-            protected Object doInBackground(Object[] arg2) {
-                return this.doInBackground(((Void[])arg2));
-            }
-
-            protected String doInBackground(Void[] params) {
-                while(!Debug.isDebuggerConnected()) {
-                    SystemClock.sleep(100);
-                }
-
-                return null;
-            }
-
-            protected void onPostExecute(Object arg1) {
-                this.onPostExecute(((String)arg1));
-            }
-
-            protected void onPostExecute(String msg) {
-                MainActivity.this.showDialog("Debugger detected!");
-                System.exit(0);
-            }
-        }.execute(new Void[]{null, null, null});
-        if((RootDetection.checkRoot1()) || (RootDetection.checkRoot2()) || (RootDetection.checkRoot3())
-                 || (IntegrityCheck.isDebuggable(this.getApplicationContext())) || MainActivity.tampered
-                 != 0) {
-            this.showDialog("Rooting or tampering detected.");
+protected void onCreate(Bundle savedInstanceState) {
+    this.verifyLibs();
+    this.init("pizzapizzapizzapizzapizz".getBytes());
+    new AsyncTask() {
+        protected Object doInBackground(Object[] arg2) {
+            return this.doInBackground(((Void[])arg2));
         }
 
-        this.check = new CodeCheck();
-        super.onCreate(savedInstanceState);
-        this.setContentView(0x7F04001B);
+        protected String doInBackground(Void[] params) {
+            while(!Debug.isDebuggerConnected()) {
+                SystemClock.sleep(100);
+            }
+
+            return null;
+        }
+
+        protected void onPostExecute(Object arg1) {
+            this.onPostExecute(((String)arg1));
+        }
+
+        protected void onPostExecute(String msg) {
+            MainActivity.this.showDialog("Debugger detected!");
+            System.exit(0);
+        }
+    }.execute(new Void[]{null, null, null});
+    if((RootDetection.checkRoot1()) || (RootDetection.checkRoot2()) || (RootDetection.checkRoot3())
+             || (IntegrityCheck.isDebuggable(this.getApplicationContext())) || MainActivity.tampered
+             != 0) {
+        this.showDialog("Rooting or tampering detected.");
     }
+
+    this.check = new CodeCheck();
+    super.onCreate(savedInstanceState);
+    this.setContentView(0x7F04001B);
+}
+```
+
+The following code snippet performs integrity checks for all native libraries as well as the Java bytecode to avoid tampering. Notice that repackaging the `classes.dex` and native libraries might be still possible. By patching out the function `verifyLibs` in the Java bytecode and the function called `baz` in the native library, an attacker can bypass all the integrity checks. The function responsible for verifying libraries gets decompiled as follows:
+
+```java
+private void verifyLibs() {
+    (this.crc = new HashMap<String, Long>()).put("armeabi", Long.parseLong(this.getResources().getString(2131099684)));
+    this.crc.put("mips", Long.parseLong(this.getResources().getString(2131099689)));
+    this.crc.put("armeabi-v7a", Long.parseLong(this.getResources().getString(2131099685)));
+    this.crc.put("arm64-v8a", Long.parseLong(this.getResources().getString(2131099683)));
+    this.crc.put("mips64", Long.parseLong(this.getResources().getString(2131099690)));
+    this.crc.put("x86", Long.parseLong(this.getResources().getString(2131099691)));
+    this.crc.put("x86_64", Long.parseLong(this.getResources().getString(2131099692)));
+    ZipFile zipFile = null;
+    Label_0419: {
+        try {
+            zipFile = new ZipFile(this.getPackageCodePath());
+            for (final Map.Entry<String, Long> entry : this.crc.entrySet()) {
+                final String string = "lib/" + entry.getKey() + "/libfoo.so";
+                final ZipEntry entry2 = zipFile.getEntry(string);
+                Log.v("UnCrackable3", "CRC[" + string + "] = " + entry2.getCrc());
+                if (entry2.getCrc() != entry.getValue()) {
+                    MainActivity.tampered = 31337;
+                    Log.v("UnCrackable3", string + ": Invalid checksum = " + entry2.getCrc() + ", supposed to be " + entry.getValue());
+                }
+            }
+            break Label_0419;
+        }
+        catch (IOException ex) {
+            Log.v("UnCrackable3", "Exception");
+            System.exit(0);
+        }
+        return;
+    }
+    final ZipEntry entry3 = zipFile.getEntry("classes.dex");
+    Log.v("UnCrackable3", "CRC[" + "classes.dex" + "] = " + entry3.getCrc());
+    if (entry3.getCrc() != this.baz()) {
+        MainActivity.tampered = 31337;
+        Log.v("UnCrackable3", "classes.dex" + ": crc = " + entry3.getCrc() + ", supposed to be " + this.baz());
+    }
+}
 ```
 
 **JNI calls: From Java to native code**
@@ -157,12 +202,9 @@ public class MainActivity extends AppCompatActivity {
         super();
     }
 
-    private native long baz() {
-    }
-
+    //<REDACTED>
     private native void init(byte[] xorkey) {
     }
-
     //<REDACTED>
  }
 ```
