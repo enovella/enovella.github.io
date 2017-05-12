@@ -11,11 +11,11 @@ categories: [android, reverse]
 *"An Android crackme arose from hell. It doesn't make prisoners"*
 </div>
 
-This post details a way of solving the level 3 of the Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know a bit about binary disassemblers, decompilers, bytecode and crackmes before reading this post. Anyhow, you can go further with the reading although some steps will be omitted.
+This post details a way of solving the level 3 of the Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know a bit about binary disassemblers, decompilers, bytecode and crackmes before reading this post. Anyhow, you can go further with the reading although some steps might be omitted.
 
-**Tools:**
+**Toolbox: Choose your guns!**
 
-The following list illustrates different tools that could be used with the same purpose. Feel free to pick the ones you can work with more comfortable.
+The following list illustrates different tools that could be used with the same purpose to achieve the same result. Feel free to pick the ones you prefer the most:
 
 * Android phone or emulator to run the crackme APK.
 * Reverse-engineering:
@@ -24,7 +24,7 @@ The following list illustrates different tools that could be used with the same 
         + `IDA Pro`.
     - Decompilers:
         + Native code:
-            * `Hex-rays`.
+            * `Hexrays`.
             * `Retdec`.
             * `Snowman`.
         + Java bytecode:
@@ -35,16 +35,18 @@ The following list illustrates different tools that could be used with the same 
     - `Frida`.
     - `Xposed`.
 
-My selection of tools was as such; Frida for performing DBI, Hexrays for native decompilation and BytecodeViewer with Procyon for Java decompilation. Hex-rays decompiler was used because its reliable decompilation on ARM code. However, `Radare2` plus open-source decompilers can also do a great job.
+My selection of tools was as such; `Frida` for performing dynamic analysis, `Hexrays` for native decompilation and `BytecodeViewer` (Procyon) for Java decompilation. The `Hexrays` decompiler was used because its reliable decompilation on ARM code. However, `Radare2` plus open-source decompilers can also do a great job.
 
 
-**Highlights:**
+**Before get started:**
 
-* There are two previous levels with less difficulty, I would first recommend to take a look at the other write-ups before reading this one.
-* Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
+Consider the next remarks to be noticed before analyzing the challenge:
+
 * The Android phone needs to be rooted.
+* There are two previous levels with less difficulty, I would first recommend you to take a peek at the other write-ups before reading this one.
+* Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
 * The native layer is where the important code is executed. Do not be distracted with the Java bytecode.
-* The strategy was to perform dynamic binary instrumentation (DBI) to overcome the anti-DBI and -debugging checks.
+
 
 **Possibles solutions:**
 
