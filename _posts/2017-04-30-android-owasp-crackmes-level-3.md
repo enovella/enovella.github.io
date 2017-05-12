@@ -85,6 +85,7 @@ We find the following protections on the mobile application:
 - Java root checks
 - Native anti-DBI
 - Native anti-debugging
+- Native integrity checks of the Java bytecode
 
 The following security mechanisms were not found within the application:
 - Java anti-DBI
@@ -93,9 +94,14 @@ The following security mechanisms were not found within the application:
 
 ## JAVA side
 
-**Java security checks**
+The following Java code snippet was obtained by decompiling the main class of the uncrackable Level3. Therefore, when the application is loaded, the MainActivity runs its method `onCreate()` which initializes itself. This code does the following:
 
-The following Java code snippet was obtained by decompiling the main class of the uncrackable Level3. This code contains root and debugger detection. The decompiled code is as follows:
+* Verifies the native libraries against tampering.
+* Initializes the native library through JNI and sends the Java secret (`"pizzapizzapizzapizzapizz"`).
+* Performs rooting, debugging and tampering detection at the Java level.
+
+
+The decompiled code is as follows:
 
 ```java
 protected void onCreate(Bundle savedInstanceState) {
@@ -135,7 +141,8 @@ protected void onCreate(Bundle savedInstanceState) {
 }
 ```
 
-The following code snippet performs integrity checks for all native libraries as well as the Java bytecode to avoid tampering. Notice that repackaging the `classes.dex` and native libraries might be still possible. By patching out the function `verifyLibs` in the Java bytecode and the function called `baz` in the native library, an attacker can bypass all the integrity checks. The function responsible for verifying libraries gets decompiled as follows:
+
+As already mentioned above, integrity checks for native libraries and Java bytecode is identified in the following function. Notice that repackaging the Java bytecode and native code is still possible. For doing that, just by patching out the function `verifyLibs` in the Java bytecode and the function called `baz` in the native library, an attacker can bypass all the integrity checks. The function responsible for verifying libraries gets decompiled as follows:
 
 ```java
 private void verifyLibs() {
@@ -210,21 +217,6 @@ public class MainActivity extends AppCompatActivity {
  }
 ```
 
-
-**Integrity checks:**
-
-```java
-package sg.vantagepoint.util;
-
-import android.content.*;
-
-public class IntegrityCheck
-{
-    public static boolean isDebuggable(final Context context) {
-        return (0x2 & context.getApplicationContext().getApplicationInfo().flags) != 0x0;
-    }
-}
-```
 
 **Rooting checks:**
 
