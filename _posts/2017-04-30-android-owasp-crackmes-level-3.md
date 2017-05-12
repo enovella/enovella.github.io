@@ -40,7 +40,7 @@ My selection of tools was as such; `Frida` for performing dynamic analysis, `Hex
 
 **Before get started:**
 
-Consider the next remarks to be noticed before analyzing the challenge:
+To begin with, consider the remarks below before analyzing the APK:
 
 * The Android phone needs to be rooted.
 * There are two previous levels with less difficulty, I would first recommend you to take a peek at the other write-ups before reading this one.
@@ -50,7 +50,16 @@ Consider the next remarks to be noticed before analyzing the challenge:
 
 **Possibles solutions:**
 
-This challenge could be solved in many ways. First of all we need to know what the application does. This performs a verification of the user input by calculating an XOR operation with a Java xorkey and a secret hidden within the native library. The final verification is done through the JNI bridge. Therefore, we need to extract several My initial ideas were performing:
+This challenge could be solved in many ways. First of all we need to know what the application does. This performs a verification of user input by verifying it against an XOR operation between a Java (`java_xor_key`) and native secret (`native_secret`) hidden within the native library. The verification is done at the native level after sending the Java secret data through the JNI bridge to the native library. The pseudo-code of the verification is as follows:
+
+```c
+if (verification(java_xor_key ^ native_secret) == user_input) {
+  return 1;
+}
+```
+
+
+Therefore, we need to extract several secrets to determine the right user input that display the message of success. The Java secret can be recovered just by decompiling the APK. The native secret needs to be recovered by a reverse engineering the code. For doing so, my initial ideas were performing:
 
 * static reverse engineering of the Java and native code plus code emulation with `Unicorn`.
 * static reverse engineering of the Java and native code plus symbolic execution by using `angr`.
@@ -60,13 +69,24 @@ This challenge could be solved in many ways. First of all we need to know what t
 
 **My Solution:**
 
-This challenge can be solved in many different ways. Though, I decided to approach it in a static way without debugging or instrumenting the Android app. This means, just pure static analysis of the Java and native code.
+This challenge could be solved in many different ways. Though, I decided to approach it by instrumenting the Android app. For that purpose, `Frida` supports both native and Java instrumentation.
 
 First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
-* `./lib/armeabi-v7a/libfoo.so` is a native library that contains ARM assembly code. We refer to this when talking about native code during this post (feel free to use the x86 code if preferred)
-* `./classes.dex` contains the Java bytecode
+* `./classes.dex` contains the Java bytecode.
+* `./lib/arm64-v8a/libfoo.so` is a native library that contains ARM64 assembly code. We refer to this when talking about native code during this post (feel free to use the x86/ARM32 code if preferred).
 
+# Security checks within the Uncrackable Level3:
+We find the following protections on the mobile application:
+- [ ] Java anti-DBI
+- [x] Java anti-debugging
+- [x] Java integrity checks
+- [x] Java obfuscation (Weak)
+- [x] Java root checks
+- [ ] Native obfuscation (a bit of symbol stripping)
+- [ ] Native root checks
+- [x] Native anti-DBI
+- [x] Native anti-debugging
 
 ## JAVA side
 
