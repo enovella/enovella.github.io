@@ -13,17 +13,17 @@ categories: [android, reverse]
 
 This post details a way of solving the level 3 of the Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know a bit about binary disassemblers, decompilers, bytecode and crackmes before reading this post. Anyhow, you can go further with the reading although some steps will be omitted.
 
-**Set-up:**
+**Tools:**
 
-The following list illustrates different tools that could be used with the same purpose. Feel free to pick the ones you can work with more comfortable. 
+The following list illustrates different tools that could be used with the same purpose. Feel free to pick the ones you can work with more comfortable.
 
 * Android phone or emulator to run the crackme APK.
-* Reverse-engineering: 
+* Reverse-engineering:
     - Disassemblers:
         + `Radare2` from git.
         + `IDA Pro`.
     - Decompilers:
-        + Native code: 
+        + Native code:
             * `Hex-rays`.
             * `Retdec`.
             * `Snowman`.
@@ -31,8 +31,8 @@ The following list illustrates different tools that could be used with the same 
             * `BytecodeViewer` (including various decompilers such as `Procyon`, `JD-GUI`, `CFR`,...).
             * `Jadx-gui`.
             * `JEB`.
-* Dynamic binary instrumentation (DBI): 
-    - `Frida`. 
+* Dynamic binary instrumentation (DBI):
+    - `Frida`.
     - `Xposed`.
 
 My selection of tools was as such; Frida for performing DBI, Hexrays for native decompilation and BytecodeViewer with Procyon for Java decompilation. Hex-rays decompiler was used because its reliable decompilation on ARM code. However, `Radare2` plus open-source decompilers can also do a great job.
@@ -42,12 +42,13 @@ My selection of tools was as such; Frida for performing DBI, Hexrays for native 
 
 * There are two previous levels with less difficulty, I would first recommend to take a look at the other write-ups before reading this one.
 * Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
-* The Android phone needs to be rooted. 
+* The Android phone needs to be rooted.
 * The native layer is where the important code is executed. Do not be distracted with the Java bytecode.
 * The strategy was to perform dynamic binary instrumentation (DBI) to overcome the anti-DBI and -debugging checks.
 
 **Possibles solutions:**
-This challenge could be solved in many ways. The application hides a secret within the native library (`libfoo.so`). My initial ideas were performing:
+
+This challenge could be solved in many ways. First of all we need to know what the application does. This performs a verification of the user input by calculating an XOR operation with a Java xorkey and a secret hidden within the native library. The final verification is done through the JNI bridge. Therefore, we need to extract several My initial ideas were performing:
 
 * static reverse engineering of the Java and native code plus code emulation with `Unicorn`.
 * static reverse engineering of the Java and native code plus symbolic execution by using `angr`.
@@ -57,11 +58,11 @@ This challenge could be solved in many ways. The application hides a secret with
 
 **My Solution:**
 
-This challenge can be solved in many different ways. Though, I decided to approach it in a static way without debugging or instrumenting the Android app. This means, just pure static analysis of the Java and native code. 
+This challenge can be solved in many different ways. Though, I decided to approach it in a static way without debugging or instrumenting the Android app. This means, just pure static analysis of the Java and native code.
 
 First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
-* `./lib/armeabi-v7a/libfoo.so` is a native library that contains ARM assembly code. We refer to this when talking about native code during this post (feel free to use the x86 code if preferred) 
+* `./lib/armeabi-v7a/libfoo.so` is a native library that contains ARM assembly code. We refer to this when talking about native code during this post (feel free to use the x86 code if preferred)
 * `./classes.dex` contains the Java bytecode
 
 
@@ -165,7 +166,7 @@ public class IntegrityCheck
 The Java package `sg.vantagepoint.util` has a class called `RootDetection` that performs up to three checks to detect if the device running the application is potentially rooted. These three checks are mainly:
 
 * `checkRoot1()` that checks the existence of the binary `su` in the file system.
-* `checkRoot2()` that checks the BUILD tag for `test-keys`. By default, stock Android ROMs from Google are built with release-keys tags. If `test-keys` are present, this can mean that the Android build on the device is either a developer build or an unofficial Google build. 
+* `checkRoot2()` that checks the BUILD tag for `test-keys`. By default, stock Android ROMs from Google are built with release-keys tags. If `test-keys` are present, this can mean that the Android build on the device is either a developer build or an unofficial Google build.
 * `checkRoot2()` that checks the existence of dangerous root applications, configuration files and daemons.
 
 The Java code responsible for performing root checks is as follows:
@@ -208,8 +209,8 @@ public class RootDetection {
 
     public static boolean checkRoot3() {
         boolean bool = true;
-        String[] array_string = new String[]{"/system/app/Superuser.apk", "/system/xbin/daemonsu", "/system/etc/init.d/99SuperSUDaemon", 
-                "/system/bin/.ext/.su", "/system/etc/.has_su_daemon", "/system/etc/.installed_su_daemon", 
+        String[] array_string = new String[]{"/system/app/Superuser.apk", "/system/xbin/daemonsu", "/system/etc/init.d/99SuperSUDaemon",
+                "/system/bin/.ext/.su", "/system/etc/.has_su_daemon", "/system/etc/.installed_su_daemon",
                 "/dev/com.koushikdutta.superuser.daemon/"};
         int i = array_string.length;
         int i1 = 0;
@@ -251,7 +252,7 @@ public class RootDetection {
 .got:00004F10 ; ===========================================================================
 ```
 
-Going to the function itself, we realize that the native library also calls to the function `__somonitor_loop` as well as clears memory to receive a value from the Java side. Before going further with the reverse engineering, we need to fix an IDA problem with JNI. IDA does not know that several functions are defined and called at the Java level but executed at the native level. For that reason, we need to fix the function prototype of all the Java callbacks starting with the package name `Java_sg_vantagepoint_uncrackable3_`. 
+Going to the function itself, we realize that the native library also calls to the function `__somonitor_loop` as well as clears memory to receive a value from the Java side. Before going further with the reverse engineering, we need to fix an IDA problem with JNI. IDA does not know that several functions are defined and called at the Java level but executed at the native level. For that reason, we need to fix the function prototype of all the Java callbacks starting with the package name `Java_sg_vantagepoint_uncrackable3_`.
 
 
 Please notice that I have renamed several variables to progressively understand the code. The constructor `sub_2788()` does the following things:
@@ -277,11 +278,11 @@ int sub_2788()
 
 Finally, the function `__somonitor_loop`  performs several security checks in order to avoid people tampering with the application at the native level. If we take a peek at the following decompiled code, then we observe that:
 
-several frameworks for dynamic binary instrumentation are checked just when the native code is loaded. For checking so, the code reads the memory space of the program and filters by the well-known frameworks: 
+several frameworks for dynamic binary instrumentation are checked just when the native code is loaded. For checking so, the code reads the memory space of the program and filters by the well-known frameworks:
 
 
 * `xposed` is a framework for modules that can change the behavior of the system and apps without touching any APKs.
-* `frida` is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX. 
+* `frida` is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX.
 
 The decompiled code is as follows:
 
@@ -325,7 +326,7 @@ ERROR:
 
 **Native anti-debugging checks:**
 
-The Java and native code are communicated through the JNI interface. 
+The Java and native code are communicated through the JNI interface.
 ```c
 int *__fastcall Java_sg_vantagepoint_uncrackable3_MainActivity_init(JNIEnv *jni, int self, const char *src_xorkey)
 {
@@ -448,7 +449,7 @@ print "The flag is: " + xored
 
 Running the script we obtain two possible flags:
 ```bash
-[21:07 edu@ubuntu level3] > python getflag.py 
+[21:07 edu@ubuntu level3] > python getflag.py
 The flag is: making owasp great again
 ```
 
