@@ -77,6 +77,7 @@ First of all, several files need to be unpacked from the APK to be reverse engin
 * `./lib/arm64-v8a/libfoo.so` is a native library that contains ARM64 assembly code. We refer to this when talking about native code during this post (feel free to use the x86/ARM32 code if preferred).
 
 **Security checks within Uncrackable Level3:**
+
 We find the following protections on the mobile application:
 - Java anti-debugging
 - Java integrity checks
@@ -94,7 +95,7 @@ The following security mechanisms were not found within the application:
 
 **Java security checks**
 
-The following Java code snippet was obtained by decompiling the main class of the uncrackable Level3. This contains root and debugger detector. The decompiled code is as follows:
+The following Java code snippet was obtained by decompiling the main class of the uncrackable Level3. This code contains root and debugger detection. The decompiled code is as follows:
 
 ```java
 protected void onCreate(Bundle savedInstanceState) {
