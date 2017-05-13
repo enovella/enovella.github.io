@@ -240,6 +240,19 @@ public class IntegrityCheck
 }
 ```
 
+Reading the ADB logs, we can also track which calculations are performed at runtime. An example of these checks at runtime is as follows:
+```bash
+05-06 16:58:39.353  9623 10651 I ActivityManager: Start proc 15027:sg.vantagepoint.uncrackable3/u0a92 for activity sg.vantagepoint.uncrackable3/.MainActivity
+05-06 16:58:40.096 15027 15027 V UnCrackable3: CRC[lib/armeabi/libfoo.so] = 1285790320
+05-06 16:58:40.096 15027 15027 V UnCrackable3: CRC[lib/mips/libfoo.so] = 839666376
+05-06 16:58:40.096 15027 15027 V UnCrackable3: CRC[lib/armeabi-v7a/libfoo.so] = 2238279083
+05-06 16:58:40.096 15027 15027 V UnCrackable3: CRC[lib/arm64-v8a/libfoo.so] = 2185392167
+05-06 16:58:40.096 15027 15027 V UnCrackable3: CRC[lib/mips64/libfoo.so] = 2232215089
+05-06 16:58:40.096 15027 15027 V UnCrackable3: CRC[lib/x86_64/libfoo.so] = 1653680883
+05-06 16:58:40.097 15027 15027 V UnCrackable3: CRC[lib/x86/libfoo.so] = 1546037721
+05-06 16:58:40.097 15027 15027 V UnCrackable3: CRC[classes.dex] = 2378563664
+```
+
 As we do not want to patch binary code, then we do not investigate more about these checks.
 
 
@@ -482,8 +495,15 @@ LABEL_7:
 <div style="text-align:center" markdown="1">
 ![3](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/pthread_create.png "Cross-references to pthread_create"){: .center-image }
 {:.image-caption}
-*Cross-references to `pthread_create`. These xrefs lead to anti-debugging and -instrumentation countermeasures.*
+*Cross-references to `pthread_create`. These xrefs lead to anti-debugging and -instrumentation functions. Functions names are manually given by my interpretation.*
 </div>
+
+The following command shows that several threads are created when the app is launched.
+```bash
+bullhead:/ # ps|grep uncrack
+u0_a92    7593  563   1633840 76644 SyS_epoll_ 7f99a8fb6c S sg.vantagepoint.uncrackable3
+u0_a92    7614  7593  1585956 37604 ptrace_sto 7f99b37e3c t sg.vantagepoint.uncrackable3
+```
 
 **Native verification:**
 
