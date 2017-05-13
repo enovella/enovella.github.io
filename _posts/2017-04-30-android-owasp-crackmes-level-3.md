@@ -98,7 +98,7 @@ First of all, several files need to be unpacked from the APK to be reverse engin
 <div style="text-align:center" markdown="1">
 ![1](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/package-tree.png "APK packages overview"){: .center-image }
 {:.image-caption}
-*APK packages overview*
+*APK packages overview. Decompilation of the Java bytecode (`classes.dex`)*
 </div>
 
 The following code snippet was obtained by decompiling the main class of the uncrackable app Level3. This has the interesting points to discuss:
@@ -553,7 +553,7 @@ The flag is: making owasp great again
 <div style="text-align:center" markdown="1">
 ![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3.png "Flag: making owasp great again"){: .center-image }
 {:.image-caption}
-*Flag3*
+*Flag: making owasp great again*
 </div>
 
 
