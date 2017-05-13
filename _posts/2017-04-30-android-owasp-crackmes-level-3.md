@@ -94,12 +94,45 @@ The following security mechanisms were not found within the application:
 
 ## JAVA side
 
-The following Java code snippet was obtained by decompiling the main class of the uncrackable Level3. Therefore, when the application is loaded, the MainActivity runs its method `onCreate()` which initializes itself. This code does the following:
+The following Java code snippet was obtained by decompiling the main class of the uncrackable Level3. This has the interesting points to discuss:
 
-* Verifies the native libraries against tampering.
-* Initializes the native library through JNI and sends the Java secret (`"pizzapizzapizzapizzapizz"`).
-* Performs rooting, debugging and tampering detection at the Java level.
+* a hardcoded key in the code (`"pizzapizzapizzapizzapizz"`).
+* The loading of the native library `libfoo.so` and declaration of two native methods: `init()` and `baz()`, which will be invoked through JNI calls. Notice that the native method is initialized with the xorkey.
+* Variables and class fields to keep track if tampering has been detected at runtime.
 
+
+The main activity gets decompiled as follows:
+```java
+public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "UnCrackable3";
+    private CodeCheck check;
+    Map crc;
+    static int tampered = 0;
+    private static final String xorkey = "pizzapizzapizzapizzapizz";
+
+    static {
+        MainActivity.tampered = 0;
+        System.loadLibrary("foo");
+    }
+
+    public MainActivity() {
+        super();
+    }
+
+    private native long baz();
+
+    private native void init(byte[] xorkey) {
+    }
+    //<REDACTED>
+ }
+```
+
+
+Furthermore, when the application is loaded, the method `onCreate()` of the main activity is loaded. This code does the following at the Java level:
+
+* Verifies the integrity of the native libraries.
+* Initializes the native library through JNI and sends the Java secret (`"pizzapizzapizzapizzapizz"`) towards the native code.
+* Performs rooting, debugging and tampering detection. If detected any of them, then the application aborts.
 
 The decompiled code is as follows:
 
@@ -142,7 +175,8 @@ protected void onCreate(Bundle savedInstanceState) {
 ```
 
 
-As already mentioned above, integrity checks for native libraries and Java bytecode is identified in the following function. Notice that repackaging the Java bytecode and native code is still possible. For doing that, just by patching out the function `verifyLibs` in the Java bytecode and the function called `baz` in the native library, an attacker can bypass all the integrity checks. The function responsible for verifying libraries gets decompiled as follows:
+**Integrity checks:**
+As already mentioned above, integrity checks for native libraries and Java bytecode are identified in the following function. Notice that repackaging the Java bytecode and native code is still possible. For doing that, just by patching out the function `verifyLibs` in the Java bytecode and the function called `baz` in the native library, an attacker can bypass all the integrity checks. The function responsible for verifying libraries gets decompiled as follows:
 
 ```java
 private void verifyLibs() {
@@ -181,40 +215,6 @@ private void verifyLibs() {
         Log.v("UnCrackable3", "classes.dex" + ": crc = " + entry3.getCrc() + ", supposed to be " + this.baz());
     }
 }
-```
-
-**JNI calls: From Java to native code**
-
-The main activity of the Uncrackable level 3 challenge has the interesting points to discuss:
-
-* Hardcoded keys in the code. `xorkey` has a plaintext key, `"pizzapizzapizzapizzapizz"``` that will be used to solve the challenge.
-* The loading of the native library `libfoo.so` and declaration of two native methods in the Java side: `baz()` and `init()`.
-* Variables and class fields to keep track if tampering is detected.
-
-
-The main activity gets decompiled as follows:
-```java
-public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "UnCrackable3";
-    private CodeCheck check;
-    Map crc;
-    static int tampered = 0;
-    private static final String xorkey = "pizzapizzapizzapizzapizz";
-
-    static {
-        MainActivity.tampered = 0;
-        System.loadLibrary("foo");
-    }
-
-    public MainActivity() {
-        super();
-    }
-
-    //<REDACTED>
-    private native void init(byte[] xorkey) {
-    }
-    //<REDACTED>
- }
 ```
 
 
@@ -289,8 +289,6 @@ public class RootDetection {
 ```
 
 
-
-## Native side
 
 **Native constructor: Section `.init_array`**
 
