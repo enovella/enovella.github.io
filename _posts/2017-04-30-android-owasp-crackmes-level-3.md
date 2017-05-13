@@ -69,12 +69,7 @@ Therefore, we need to extract several secrets to determine the right user input 
 
 **My Solution:**
 
-My final inclination was for instrumenting the Android app at runtime. For that purpose, `Frida` is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX and on top of that it is being continuously improved. What else can we ask for?
-
-First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
-
-* `./classes.dex` contains the Java bytecode.
-* `./lib/arm64-v8a/libfoo.so` is a native library that contains ARM64 assembly code. We refer to this when talking about native code during this post (feel free to use the x86/ARM32 code if preferred).
+My final inclination was going for the binary instrumentation of the Android app at runtime. For that purpose, `Frida` is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX and on top of that it is being continuously improved. What else can we ask for? Let's use `Frida` then.
 
 **Security checks within Uncrackable Level3:**
 
@@ -91,12 +86,24 @@ The following security mechanisms were not found within the application:
 - Java obfuscation
 - Native obfuscation (only a bit of symbol stripping)
 - Native root checks
+- Native integrity checks of the native code itself
 
 ## Java side I. Reverse-engineering Java bytecode
 
-The following Java code snippet was obtained by decompiling the main class of the uncrackable Level3. This has the interesting points to discuss:
+First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
-* a hardcoded key in the code (`"pizzapizzapizzapizzapizz"`).
+* `./classes.dex` contains the Java bytecode.
+* `./lib/arm64-v8a/libfoo.so` is a native library that contains ARM64 assembly code. We refer to this when talking about native code during this post (feel free to use the x86/ARM32 code if preferred). As I was running the app in a Nexus5X, the library to reverse engineer was the compiled for ARM64 architectures.
+
+<div style="text-align:center" markdown="1">
+![1](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/package-tree.png "APK packages overview"){: .center-image }
+{:.image-caption}
+*APK packages overview*
+</div>
+
+The following code snippet was obtained by decompiling the main class of the uncrackable app Level3. This has the interesting points to discuss:
+
+* a hardcoded key in the code (`String xorkey = "pizzapizzapizzapizzapizz"`).
 * The loading of the native library `libfoo.so` and declaration of two native methods: `init()` and `baz()`, which will be invoked through JNI calls. Notice that the native method is initialized with the xorkey.
 * Variables and class fields to keep track if tampering has been detected at runtime.
 
@@ -130,8 +137,8 @@ public class MainActivity extends AppCompatActivity {
 
 Furthermore, when the application is launched, the method `onCreate()` of the main activity gets executed. This method does the following at the Java level:
 
-* Verifies the integrity of the native libraries.
-* Initializes the native library through JNI and sends the Java secret (`"pizzapizzapizzapizzapizz"`) towards the native code.
+* Verifies the integrity of the native libraries by calculating the CRC checksum. Note that none cryptography is used to sign the native libraries.
+* Initializes the native library and sends the Java secret (`"pizzapizzapizzapizzapizz"`) towards the native code through JNI calls.
 * Performs rooting, debugging and tampering detection. If detected any of them, then the application aborts.
 
 The decompiled code is as follows:
@@ -217,6 +224,23 @@ private void verifyLibs() {
     }
 }
 ```
+
+On top of these integrity checks, we also observe the class `IntegrityCheck` that verifies that the application has not been tampered with and thus does not contain the flag of debuggable. This class gets decompiled as follows:
+
+```java
+package sg.vantagepoint.util;
+
+import android.content.*;
+
+public class IntegrityCheck
+{
+    public static boolean isDebuggable(final Context context) {
+        return (0x2 & context.getApplicationContext().getApplicationInfo().flags) != 0x0;
+    }
+}
+```
+
+As we do not want to patch binary code, then we do not investigate more about these checks.
 
 
 **Rooting checks:**
