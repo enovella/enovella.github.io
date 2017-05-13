@@ -346,87 +346,81 @@ Java.perform(function () {
 
 **Native constructor: Section `.init_array`**
 
- An ELF binary contains a section called `.init_array` which holds the pointers to functions that will be executed when the program starts. If we observe what this ARM shared object has in its constructor, then we can see the following function pointer `sub_2788` at offset `0x4de8`: (in IDA Pro uses the shortcut `ctrl`+`s` for showing sections)
+ An ELF binary contains a section called `.init_array` which holds the pointers to functions that will be executed when the program starts. If we observe what this ARM shared object has in its constructor, then we can see the following function pointer `sub_73D0` at offset `0x4de8`: (in IDA Pro uses the shortcut `ctrl`+`s` for showing sections)
 
 ```c
-.init_array:00004DE8 ; ===========================================================================
-.init_array:00004DE8
-.init_array:00004DE8 ; Segment type: Pure data
-.init_array:00004DE8                 AREA .init_array, DATA
-.init_array:00004DE8                 ; ORG 0x4DE8
-.init_array:00004DE8                 DCD sub_2788+1
-.init_array:00004DEC                 ALIGN 0x10
-.init_array:00004DEC ; .init_array   ends
-.init_array:00004DEC
-.got:00004F10 ; ===========================================================================
+.init_array:0000000000019CB0                   ; ===========================================================================
+.init_array:0000000000019CB0
+.init_array:0000000000019CB0                   ; Segment type: Pure data
+.init_array:0000000000019CB0                                   AREA .init_array, DATA, ALIGN=3
+.init_array:0000000000019CB0                                   ; ORG 0x19CB0
+.init_array:0000000000019CB0 D0 73 00 00 00 00+                DCQ sub_73D0
+.init_array:0000000000019CB8 00 00 00 00 00 00+                ALIGN 0x20
+.init_array:0000000000019CB8 00 00             ; .init_array   ends
+.init_array:0000000000019CB8
+.fini_array:0000000000019CC0                   ; ===========================================================================
 ```
 
-Going to the function itself, we realize that the native library also calls to the function `__somonitor_loop` as well as clears memory to receive a value from the Java side. Before going further with the reverse engineering, we need to fix an IDA problem with JNI. IDA does not know that several functions are defined and called at the Java level but executed at the native level. For that reason, we need to fix the function prototype of all the Java callbacks starting with the package name `Java_sg_vantagepoint_uncrackable3_`.
+Going to the function itself, we realize that the native library also calls to the function `monitor_frida_xposed` as well as clears memory to receive a value from the Java side. Before going further with the reverse engineering, we need to fix an IDA problem with JNI. IDA does not know that several functions are defined and called at the Java level but executed at the native level. For that reason, we need to fix the function prototype of all the Java callbacks starting with the package name `Java_sg_vantagepoint_uncrackable3_`.
 
+Please notice that I have renamed several variables to progressively understand the code. The constructor `sub_73D0()` does the following things:
 
-Please notice that I have renamed several variables to progressively understand the code. The constructor `sub_2788()` does the following things:
+* `pthread_create()` function creates a new thread executing the code of the function pointer `monitor_frida_xposed()`.
+* `xorkey_native` memory is cleared before being initialized from the Java secret.
+* `codecheck` variable is a counter to determine integrity. Later on, it is checked before computing the native secret and xored with the `xorkey`.
+* `_stack_chk_guard` is a macro to check the stack cookies before returning the function to prevent memory corruption issues.
 
-* `pthread_create()` function creates a new thread executing the code of the function `__somonitor_loop()`
-* `xorkey` is cleared out from memory before being initialized from the Java side. Note that this variable name was given due to the initialization of the method at the Java side with exactly the same name (`xorkey`)
-* `codecheck` variable is a counter to determine integrity. Note that this variable name was assigned in other function where the Android log reveals the use of this variable
-* `_stack_chk_guard` is a macro that proves that the code was compiled with stack cookies to prevent memory corruption issues
-
-The decompiled code of `sub_2788()`:
+The decompiled code of `sub_73D0()` (renamed to `init`):
 ```c
-int sub_2788()
+int init()
 {
-  int v1; // [sp+0h] [bp-10h]@1
-  int v2; // [sp+4h] [bp-Ch]@1
+  int result; // r0@1
+  pthread_t newthread; // [sp+10h] [bp-10h]@1
 
-  pthread_create((pthread_t *)&v1, 0, (void *(*)(void *))__somonitor_loop, 0);
-  _aeabi_memclr8(xorkey, 25);
+  result = pthread_create(&newthread, 0, (void *(*)(void *))monitor_frida_xposed, 0);
+  byte_9034 = 0;
+  dword_9030 = 0;
+  dword_902C = 0;
+  dword_9028 = 0;
+  dword_9024 = 0;
+  dword_9020 = 0;
+  xorkey_native = 0;
   ++codecheck;
-  return _stack_chk_guard - v2;
+  return result;
 }
 ```
 
-Finally, the function `__somonitor_loop`  performs several security checks in order to avoid people tampering with the application at the native level. If we take a peek at the following decompiled code, then we observe that:
+Finally, the function `monitor_frida_xposed`  performs several security checks in order to avoid people instrumenting the application at the native level. If we take a peek at the following decompiled code, then we observe that several frameworks for dynamic binary instrumentation are checked.
 
-several frameworks for dynamic binary instrumentation are checked just when the native code is loaded. For checking so, the code reads the memory space of the program and filters by the well-known frameworks:
-
-The decompiled code is as follows:
-
+The function `monitor_frida_xposed` gets decompiled as follows:
 ```c
-void __fastcall __noreturn __somonitor_loop(void *a1)
+void __fastcall __noreturn monitor_frida_xposed(int a1)
 {
-  FILE *fd; // r5@1
-  const char *str1; // r1@7
-  const char *str2; // r2@7
-  int s; // [sp+0h] [bp-20Ch]@2
+  FILE *stream; // [sp+2Ch] [bp-214h]@1
+  char s; // [sp+30h] [bp-210h]@2
 
-  fd = fopen("/proc/self/maps", "r");
-  if ( fd )
+  while ( 1 )
   {
-    do
+    stream = fopen("/proc/self/maps", "r");
+    if ( !stream )
+      break;
+    while ( fgets(&s, 512, stream) )
     {
-      while ( !fgets((char *)&s, 512, fd) )
+      if ( strstr(&s, "frida") || strstr(&s, "xposed") )
       {
-        fclose(fd);
-        usleep(500u);
-        fd = fopen("/proc/self/maps", "r");
-        if ( !fd )
-          goto ERROR;
+        _android_log_print(2, "UnCrackable3", "Tampering detected! Terminating...");
+        goodbye();
       }
     }
-    while ( !strstr((const char *)&s, "frida") && !strstr((const char *)&s, "xposed") );
-    str1 = "UnCrackable3";
-    str2 = "Tampering detected! Terminating...";
+    fclose(stream);
+    usleep(500u);
   }
-  else
-  {
-ERROR:
-    str1 = "UnCrackable3";
-    str2 = "Error opening /proc/self/maps! Terminating...";
-  }
-  _android_log_print(2, str1, str2);
+  _android_log_print(2, "UnCrackable3", "Error opening /proc/self/maps! Terminating...");
   goodbye();
 }
 ```
+
+On the DBI section, we will walk you through on how to bypass these checks by instrumenting the app in different manners. The best part is that we will use `Frida` to bypass the anti-frida checks. That's is priceless! Isn't it?
 
 
 **Native anti-debugging checks:**
@@ -435,7 +429,7 @@ The Java and native code are communicated through JNI calls. When the Java code 
 
 It is important to mention that possibly `IDA Pro` does not detect the JNI callbacks as functions. For solving so, just go to the exports windows and make a procedure by pressing the key `P` on the export `Java_sg_vantagepoint_uncrackable3_MainActivity_init`. After that, you will also need to redefine the method signature by pressing the key `Y` when located at the function declaration of it. You can define the `JNIEnv*` objects to get better C-like code as the code shown below.
 
-The JNI call performs anti-debugging checks, copies the `xorkey` into a global variable and increment the global counter `codecheck` to later on detect if the anti-debug checks were done fine. The JNI call `Java_sg_vantagepoint_uncrackable3_MainActivity_init` gets decompiled as follows:
+The JNI call performs anti-debugging checks, copies the `xorkey` into a global variable and increments the global counter `codecheck` to later on detect if the anti-debug checks were done fine. The JNI call `Java_sg_vantagepoint_uncrackable3_MainActivity_init` gets decompiled as follows:
 ```c
 int *__fastcall Java_sg_vantagepoint_uncrackable3_MainActivity_init(JNIEnv *env, jobject this, char *xorkey)
 {
@@ -531,7 +525,7 @@ The flag is: making owasp great again
 <div style="text-align:center" markdown="1">
 ![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3.png "Flag: making owasp great again"){: .center-image }
 {:.image-caption}
-*Flag: making owasp great again*
+*Flag: **making owasp great again***
 </div>
 
 
@@ -587,6 +581,6 @@ LABEL_8:
 
 **References:**
 
-* [List of OWASP crackmes](https://github.com/OWASP/owasp-mstg/blob/master/Crackmes/README.md)
 * [Frida](https://www.frida.re/)
+* [List of OWASP crackmes](https://github.com/OWASP/owasp-mstg/blob/master/Crackmes/README.md)
 * [More Android Anti-Debugging Fun](http://www.vantagepoint.sg/blog/89-more-android-anti-debugging-fun)
