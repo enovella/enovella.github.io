@@ -240,7 +240,7 @@ public class IntegrityCheck
 }
 ```
 
-Reading the ADB logs, we can also track which calculations are performed at runtime. An example of these checks at runtime is as follows:
+Reading the ADB logs, we can also track which calculations are performed when the app is run. An example of these checks at runtime is as follows:
 ```bash
 05-06 16:58:39.353  9623 10651 I ActivityManager: Start proc 15027:sg.vantagepoint.uncrackable3/u0a92 for activity sg.vantagepoint.uncrackable3/.MainActivity
 05-06 16:58:40.096 15027 15027 V UnCrackable3: CRC[lib/armeabi/libfoo.so] = 1285790320
@@ -389,9 +389,6 @@ Finally, the function `__somonitor_loop`  performs several security checks in or
 
 several frameworks for dynamic binary instrumentation are checked just when the native code is loaded. For checking so, the code reads the memory space of the program and filters by the well-known frameworks:
 
-
-
-
 The decompiled code is as follows:
 
 ```c
@@ -434,76 +431,111 @@ ERROR:
 
 **Native anti-debugging checks:**
 
-The Java and native code are communicated through the JNI interface.
+The Java and native code are communicated through JNI calls. When the Java code is started, this loads the native code and initializes it with a bunch of bytes containing the Java secret. The native code is not obfuscated although it was slightly stripped and compiled dynamically. Therefore, we can still have symbols and strings in the clear. Notice that the following C-like code we are going to review, it has been renamed by the author depending on the interpretation of the callbacks.
+
+It is important to mention that possibly `IDA Pro` does not detect the JNI callbacks as functions. For solving so, just go to the exports windows and make a procedure by pressing the key `P` on the export `Java_sg_vantagepoint_uncrackable3_MainActivity_init`. After that, you will also need to redefine the method signature by pressing the key `Y` when located at the function declaration of it. You can define the `JNIEnv*` objects to get better C-like code as the code shown below.
+
+The JNI call performs anti-debugging checks, copies the `xorkey` into a global variable and increment the global counter `codecheck` to later on detect if the anti-debug checks were done fine. The JNI call `Java_sg_vantagepoint_uncrackable3_MainActivity_init` gets decompiled as follows:
 ```c
-int *__fastcall Java_sg_vantagepoint_uncrackable3_MainActivity_init(JNIEnv *jni, int self, const char *src_xorkey)
+int *__fastcall Java_sg_vantagepoint_uncrackable3_MainActivity_init(JNIEnv *env, jobject this, char *xorkey)
 {
+  const char *xorkey_jni; // ST18_4@1
   int *result; // r0@1
 
   anti_debug();
-  strncpy(xorkey, src_xorkey, 25u);
+  xorkey_jni = (const char *)_JNIEnv::GetByteArrayElements(env, xorkey, 0);
+  strncpy((char *)&xorkey_native, xorkey_jni, 24u);
+  _JNIEnv::ReleaseByteArrayElements(env, xorkey, xorkey_jni, 2);
   result = &codecheck;
   ++codecheck;
   return result;
 }
 ```
 
-Decompiling and manually renaming the native code leads to the following `anti_debug()` function:
+Digging into the `anti_debug` function leads to the piece of code shown just below: (Functions names and variables are manually given by my interpretation)
 
 ```c
-int anti_debug(void)
+int anti_debug()
 {
-  __pid_t ppid; // r4@3
-  int result; // r0@7
-  pthread_t newthread; // [sp+4h] [bp-14h]@2
-  int stat_loc; // [sp+8h] [bp-10h]@4
-  int cookie; // [sp+Ch] [bp-Ch]@7
+  __pid_t pid; // [sp+28h] [bp-18h]@2
+  pthread_t newthread; // [sp+2Ch] [bp-14h]@8
+  int stat_loc; // [sp+30h] [bp-10h]@3
 
-  pid = fork();
-  if ( pid )
+  ::pid = fork();
+  if ( ::pid )
   {
     pthread_create(&newthread, 0, (void *(*)(void *))monitor_pid, 0);
   }
   else
   {
-    ppid = getppid();
-    if ( !ptrace(PTRACE_ATTACH, ppid, 0, 0) )
+    pid = getppid();
+    if ( !ptrace(PTRACE_ATTACH, pid, 0, 0) )
     {
-      waitpid(ppid, &stat_loc, 0);
-      ptrace(PTRACE_CONT, ppid, 0, 0);
-      if ( waitpid(ppid, &stat_loc, 0) )
+      waitpid(pid, &stat_loc, 0);
+      ptrace(PTRACE_CONT, pid, 0, 0);
+      while ( waitpid(pid, &stat_loc, 0) )
       {
-        while ( (stat_loc & 0x7F) == 127 )
-        {
-          ptrace(PTRACE_CONT, ppid, 0, 0);
-          if ( !waitpid(ppid, &stat_loc, 0) )
-            goto LABEL_7;
-        }
-LABEL_8:
-        exit(0);
+        if ( (stat_loc & 127) != 127 )
+          exit(0);
+        ptrace(PTRACE_CONT, pid);
       }
     }
   }
-LABEL_7:
-  result = _stack_chk_guard - cookie;
-  if ( _stack_chk_guard != cookie )
-    goto LABEL_8;
-  return result;
+  return _stack_chk_guard;
 }
 ```
 
-<div style="text-align:center" markdown="1">
-![3](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/pthread_create.png "Cross-references to pthread_create"){: .center-image }
-{:.image-caption}
-*Cross-references to `pthread_create`. These xrefs lead to anti-debugging and -instrumentation functions. Functions names are manually given by my interpretation.*
-</div>
+The same author of this challenge has written an amazing post explaining how to perform self-debugging technique in order to avoid tampering with the native code. The `anti_debug` function exploits the fact that only one debugger can attach to a process at any one time. To investigate how this works deeper, please take a peek at the references. I will not re-explain the same here.
 
-The following command shows that several threads are created when the app is launched.
+Effectively, if we run the application with a debugger attached to it then we can see two threads are launched and the application crashes.
 ```bash
 bullhead:/ # ps|grep uncrack
 u0_a92    7593  563   1633840 76644 SyS_epoll_ 7f99a8fb6c S sg.vantagepoint.uncrackable3
 u0_a92    7614  7593  1585956 37604 ptrace_sto 7f99b37e3c t sg.vantagepoint.uncrackable3
 ```
+
+
+<div style="text-align:center" markdown="1">
+![3](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/pthread_create.png "Cross-references to pthread_create"){: .center-image }
+{:.image-caption}
+*Cross-references to `pthread_create`. These xrefs lead to anti-debugging and -instrumentation functions.*
+</div>
+
+
+
+
+
+## Native side II. Dynamic binary instrumentation with `Frida`
+
+**The flag:**
+
+The following python script generates the user input required to pass the challenge:
+```python
+secret = "1d0811130f1749150d0003195a1d1315080e5a0017081314".decode("hex")
+xorkey = "pizzapizzapizzapizzapizz"
+
+def xor_strings(xs, ys):
+    return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(xs, ys))
+
+user_input = xor_strings(secret,xorkey)
+print "The flag is: " + user_input
+```
+
+Eventually, we got the flag:
+```bash
+[21:07 edu@ubuntu level3] > python getflag.py
+The flag is: making owasp great again
+```
+
+
+<div style="text-align:center" markdown="1">
+![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3.png "Flag: making owasp great again"){: .center-image }
+{:.image-caption}
+*Flag: making owasp great again*
+</div>
+
+
+# Extra: Compiler optimizations.
 
 **Native verification:**
 
@@ -553,38 +585,8 @@ LABEL_8:
 }
 ```
 
-## Native side II. Dynamic binary instrumentation with `Frida`
-
-**The flag:**
-
-The following python script generates the user input required to pass the challenge:
-```python
-secret = "1d0811130f1749150d0003195a1d1315080e5a0017081314".decode("hex")
-xorkey = "pizzapizzapizzapizzapizz"
-
-def xor_strings(xs, ys):
-    return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(xs, ys))
-
-user_input = xor_strings(secret,xorkey)
-print "The flag is: " + user_input
-```
-
-Eventually, we got the flag:
-```bash
-[21:07 edu@ubuntu level3] > python getflag.py
-The flag is: making owasp great again
-```
-
-
-<div style="text-align:center" markdown="1">
-![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3.png "Flag: making owasp great again"){: .center-image }
-{:.image-caption}
-*Flag: making owasp great again*
-</div>
-
-
 **References:**
 
 * [List of OWASP crackmes](https://github.com/OWASP/owasp-mstg/blob/master/Crackmes/README.md)
 * [Frida](https://www.frida.re/)
-
+* [More Android Anti-Debugging Fun](http://www.vantagepoint.sg/blog/89-more-android-anti-debugging-fun)
