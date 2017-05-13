@@ -346,7 +346,7 @@ Java.perform(function () {
 
 **Native constructor: Section `.init_array`**
 
- An ELF binary contains a section called `.init_array` which holds the pointers to functions that will be executed when the program starts. If we observe what this ARM shared object has in its constructor, then we can see the following function pointer `sub_73D0` at offset `0x4de8`: (in IDA Pro uses the shortcut `ctrl`+`s` for showing sections)
+ An ELF binary contains a section called `.init_array` which holds the pointers to functions that will be executed when the program starts. If we observe what this ARM shared object has in its constructor, then we can see the following function pointer `sub_73D0` at offset `0x19cb0`: (in IDA Pro uses the shortcut `ctrl`+`s` for showing sections)
 
 ```c
 .init_array:0000000000019CB0                   ; ===========================================================================
@@ -368,7 +368,6 @@ Please notice that I have renamed several variables to progressively understand 
 * `pthread_create()` function creates a new thread executing the code of the function pointer `monitor_frida_xposed()`.
 * `xorkey_native` memory is cleared before being initialized from the Java secret.
 * `codecheck` variable is a counter to determine integrity. Later on, it is checked before computing the native secret and xored with the `xorkey`.
-* `_stack_chk_guard` is a macro to check the stack cookies before returning the function to prevent memory corruption issues.
 
 The decompiled code of `sub_73D0()` (renamed to `init`):
 ```c
@@ -390,9 +389,7 @@ int init()
 }
 ```
 
-Finally, the function `monitor_frida_xposed`  performs several security checks in order to avoid people instrumenting the application at the native level. If we take a peek at the following decompiled code, then we observe that several frameworks for dynamic binary instrumentation are checked.
-
-The function `monitor_frida_xposed` gets decompiled as follows:
+Finally, the function `monitor_frida_xposed`  performs several security checks in order to avoid people instrumenting the application at the native level. If we take a peek at the following decompiled code, then we observe that several frameworks for dynamic binary instrumentation are checked:
 ```c
 void __fastcall __noreturn monitor_frida_xposed(int a1)
 {
@@ -527,6 +524,11 @@ The flag is: making owasp great again
 {:.image-caption}
 *Flag: **making owasp great again***
 </div>
+
+
+**Conclusions:**
+* TODO
+* TODO
 
 
 # Extra: Compiler optimizations.
