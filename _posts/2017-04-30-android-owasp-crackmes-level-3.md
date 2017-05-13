@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
 ```
 
 
-Furthermore, when the application is loaded, the method `onCreate()` of the main activity is loaded. This code does the following at the Java level:
+Furthermore, when the application is launched, the method `onCreate()` of the main activity gets executed. This method does the following at the Java level:
 
 * Verifies the integrity of the native libraries.
 * Initializes the native library through JNI and sends the Java secret (`"pizzapizzapizzapizzapizz"`) towards the native code.
@@ -176,7 +176,8 @@ protected void onCreate(Bundle savedInstanceState) {
 
 
 **Integrity checks:**
-As already mentioned above, integrity checks for native libraries and Java bytecode are identified in the following function. Notice that repackaging the Java bytecode and native code is still possible. For doing that, just by patching out the function `verifyLibs` in the Java bytecode and the function called `baz` in the native library, an attacker can bypass all the integrity checks. The function responsible for verifying libraries gets decompiled as follows:
+
+As already mentioned above, integrity checks for native libraries and Java bytecode are identified in the function `verifyLibs`. Notice that repackaging the Java bytecode and native code may be still possible. For doing that, just by patching out the function `verifyLibs` in the Java bytecode and the function `baz` in the native library, an attacker could bypass all the integrity checks and thus continue attacking the mobile app. The function responsible for verifying libraries gets decompiled as follows:
 
 ```java
 private void verifyLibs() {
