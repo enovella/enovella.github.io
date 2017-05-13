@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Android OWASP crackmes: Write-up Level 2"
+title:  "Android OWASP crackmes: Write-up UnCrackable Level 2"
 date:   2017-05-01 03:59:03 +0700
 categories: [android, reverse]
 ---
@@ -11,7 +11,7 @@ categories: [android, reverse]
 *"UnCrackable App for Android Level 2. This app holds a secret inside. May include traces of native code."*
 </div>
 
-This post details a way of solving the level 2 of Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know about binary disassemblers, decompilers, bytecode and crackmes before reading this post. 
+This post details a way of solving the level 2 of Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know about binary disassemblers, decompilers, bytecode and crackmes before reading this post.
 
 **Requirements: What do we need?**
 
@@ -30,7 +30,7 @@ This post details a way of solving the level 2 of Android crackmes released by t
 
 **My Solution:**
 
-This challenge can be solved in many different ways. Though, I decided to approach it in dynamic way by performing dynamic binary instrumentation with `Frida`. 
+This challenge can be solved in many different ways. Though, I decided to approach it in dynamic way by performing dynamic binary instrumentation with `Frida`.
 
 ```java
 Java.perform(function () {
@@ -76,7 +76,7 @@ Java.perform(function () {
 	debugcheck.a.overload("android.content.Context").implementation = function(var_0) {
 		send("sg.vantagepoint.a.b.a(Landroid/content/Context;)Z  Debug check HIT! ");
 		return 0;
-	};	
+	};
 */
 
 	send("Hooks installed.");

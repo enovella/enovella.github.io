@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Android OWASP crackmes: Write-up Level 3"
+title:  "Android OWASP crackmes: Write-up UnCrackable Level 3"
 date:   2017-04-30 03:39:03 +0700
 categories: [android, reverse]
 ---
@@ -15,7 +15,7 @@ This post details a way of solving the level 3 of the Android crackmes released 
 
 **Toolbox: Choose your guns!**
 
-The following list illustrates different tools that could be used with the same purpose to achieve the same result. Feel free to pick the ones you prefer the most:
+The following list illustrates different tools that could be used with the same goal. Feel free to pick the ones you prefer the most:
 
 * Android phone or emulator to run the crackme APK.
 * Reverse-engineering:
@@ -31,7 +31,7 @@ The following list illustrates different tools that could be used with the same 
             * `BytecodeViewer` (including various decompilers such as `Procyon`, `JD-GUI`, `CFR`,...).
             * `Jadx-gui`.
             * `JEB`.
-* Dynamic binary instrumentation (DBI):
+* Dynamic binary instrumentation (DBI) framework:
     - `Frida`.
     - `Xposed`.
 
@@ -59,7 +59,7 @@ if (verification(java_xor_key ^ native_secret) == user_input) {
 ```
 
 
-Therefore, we need to extract several secrets to determine the right user input that display the message of success. The Java secret can be recovered just by decompiling the APK. The native secret needs to be recovered by a reverse engineering the code. For doing so, my initial ideas were performing:
+Therefore, we need to extract several secrets to determine the right user input that display the message of success. The Java secret can be recovered just by decompiling the APK. The native secret needs to be recovered by a reverse engineering the code. For doing so, my initial thoughts were performing:
 
 * static reverse engineering of the Java and native code plus code emulation with `Unicorn`.
 * static reverse engineering of the Java and native code plus symbolic execution by using `angr`.
@@ -69,7 +69,7 @@ Therefore, we need to extract several secrets to determine the right user input 
 
 **My Solution:**
 
-This challenge could be solved in many different ways. Though, I decided to approach it by instrumenting the Android app. For that purpose, `Frida` supports both native and Java instrumentation.
+My final inclination was for instrumenting the Android app at runtime. For that purpose, `Frida` is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX and on top of that it is being continuously improved. What else can we ask for?
 
 First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
@@ -81,7 +81,6 @@ First of all, several files need to be unpacked from the APK to be reverse engin
 We find the following protections on the mobile application:
 - Java anti-debugging
 - Java integrity checks
-- Java obfuscation (Weak)
 - Java root checks
 - Native anti-DBI
 - Native anti-debugging
@@ -89,10 +88,11 @@ We find the following protections on the mobile application:
 
 The following security mechanisms were not found within the application:
 - Java anti-DBI
-- Native obfuscation (a bit of symbol stripping)
+- Java obfuscation
+- Native obfuscation (only a bit of symbol stripping)
 - Native root checks
 
-## JAVA side
+## Java side I. Reverse-engineering Java bytecode
 
 The following Java code snippet was obtained by decompiling the main class of the uncrackable Level3. This has the interesting points to discuss:
 
@@ -288,8 +288,24 @@ public class RootDetection {
     }
 }
 ```
+## Java side II. Dynamic binary instrumentation with `Frida`
 
 
+```java
+Java.perform(function () {
+    send("Placing Java hooks...");
+
+    var sys = Java.use("java.lang.System");
+    sys.exit.overload("int").implementation = function(var_0) {
+        send("java.lang.System.exit(I)V  // We avoid exiting the application  :)");
+    };
+
+    send("Done Java hooks installed.");
+});
+```
+
+
+## Native side I. Reverse-engineering native code
 
 **Native constructor: Section `.init_array`**
 
@@ -337,8 +353,7 @@ Finally, the function `__somonitor_loop`  performs several security checks in or
 several frameworks for dynamic binary instrumentation are checked just when the native code is loaded. For checking so, the code reads the memory space of the program and filters by the well-known frameworks:
 
 
-* `xposed` is a framework for modules that can change the behavior of the system and apps without touching any APKs.
-* `frida` is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX.
+
 
 The decompiled code is as follows:
 
@@ -488,10 +503,11 @@ LABEL_8:
 }
 ```
 
+## Native side II. Dynamic binary instrumentation with `Frida`
 
 **The flag:**
 
-The following python script generates the string needed to obtain the message of success:
+The following python script generates the user input required to pass the challenge:
 ```python
 secret = "1d0811130f1749150d0003195a1d1315080e5a0017081314".decode("hex")
 xorkey = "pizzapizzapizzapizzapizz"
@@ -499,25 +515,26 @@ xorkey = "pizzapizzapizzapizzapizz"
 def xor_strings(xs, ys):
     return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(xs, ys))
 
-xored = xor_strings(secret,xorkey)
-print "The flag is: " + xored
+user_input = xor_strings(secret,xorkey)
+print "The flag is: " + user_input
 ```
 
-Running the script we obtain two possible flags:
+Eventually, we got the flag:
 ```bash
 [21:07 edu@ubuntu level3] > python getflag.py
 The flag is: making owasp great again
 ```
 
 
-<!-- <div style="text-align:center" markdown="1">
-![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3-2.png "Flag 2"){: .center-image }
+<div style="text-align:center" markdown="1">
+![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3.png "Flag: making owasp great again"){: .center-image }
 {:.image-caption}
-*Flag2*
-</div> -->
+*Flag3*
+</div>
 
 
 **References:**
 
 * [List of OWASP crackmes](https://github.com/OWASP/owasp-mstg/blob/master/Crackmes/README.md)
+* [Frida](https://www.frida.re/)
 

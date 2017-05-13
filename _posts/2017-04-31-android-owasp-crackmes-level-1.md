@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Android OWASP crackmes: Write-up Level 1"
+title:  "Android OWASP crackmes: Write-up UnCrackable Level 1"
 date:   2017-04-31 03:59:03 +0700
 categories: [android, reverse]
 ---
@@ -17,7 +17,7 @@ This post details a way of solving the level 1 of Android crackmes released by t
 
 * Android phone or emulator to run the crackme APK
 * Android decompiler of your preference to obtain Java code. (BytecodeViewer, Jadx-gui, JEB, JD-GUI,...)
-* Dynamic binary instrumentation of your preference (Xposed or Frida)
+* Dynamic binary instrumentation framework of your preference (Xposed or Frida)
 * Time and a bit of thinking
 
 
