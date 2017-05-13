@@ -479,6 +479,12 @@ LABEL_7:
 }
 ```
 
+<div style="text-align:center" markdown="1">
+![3](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/pthread_create.png "Cross-references to pthread_create"){: .center-image }
+{:.image-caption}
+*Cross-references to `pthread_create`. These xrefs lead to anti-debugging and -instrumentation countermeasures.*
+</div>
+
 **Native verification:**
 
 ```c
