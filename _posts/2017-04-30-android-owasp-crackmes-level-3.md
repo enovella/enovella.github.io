@@ -337,6 +337,9 @@ public class RootDetection {
 
 ## 2. Reverse-engineering native code
 
+The Java (Dalvik) and native code are communicated through JNI calls. When the Java code is started, this loads the native code and initializes it with a bunch of bytes containing the Java secret. The native code is not obfuscated although it was slightly stripped and not statically compiled. Therefore, we still have symbols in the binary.
+
+It is important to mention that possibly `IDA Pro` does not detect the JNI callbacks as functions. For solving so, just go to the exports windows and make a procedure by pressing the key `P` on the export `Java_sg_vantagepoint_uncrackable3_MainActivity_*`. After that, you will also need to redefine the method signature by pressing the key `Y` when located at the function declaration of it. You can define the `JNIEnv*` objects to get better C-like code as the C-like code shown in this section.
 
 **Native constructor:**
 
@@ -355,9 +358,7 @@ An ELF binary contains a section called `.init_array` which holds the pointers t
 .fini_array:0000000000019CC0                   ; ==================================================
 ```
 
-`Radare2` also supports the identification of the JNI init methods since very recently. Thanks to `@pancake` and `@alvaro_fe` for their quick implementation on supporting the JNI entrypoints. If you are using `radare2`, just using the command `ie` will show you the entrypoints. More info about the commits in the references.
-
-<!-- Going to the function itself, we realize that the native library also calls to the function `monitor_frida_xposed` as well as clears memory to receive a value from the Java side. Before going further with the reverse engineering, we need to fix an IDA problem with JNI. IDA does not know that several functions are defined and called at the Java level but executed at the native level. For that reason, we need to fix the function prototype of all the Java callbacks starting with the package name `Java_sg_vantagepoint_uncrackable3_`. -->
+`Radare2` also supports the identification of the JNI init methods since very recently. Thanks to `@pancake` and `@alvaro_fe` for their quick implementation when  supporting the JNI entrypoints in `radare2`. If you are using `radare2`, just using the command `ie` will show you the entrypoints. More info about the commits in the references.
 
 The constructor `sub_73D0()` does the following things:
 
@@ -422,13 +423,9 @@ On the DBI section, we will walk you through on how to bypass these checks by in
 
 **Native anti-debugging checks:**
 
-The Java (Dalvik) and native code are communicated through JNI calls. When the Java code is started, this loads the native code and initializes it with a bunch of bytes containing the Java secret. The native code is not obfuscated although it was slightly stripped and not statically compiled. Therefore, we still have symbols in the binary.
+The JNI call `Java_sg_vantagepoint_uncrackable3_MainActivity_init` starts executing the `anti_debug` function, then copies the `xorkey` into a global variable and also increments the global counter `codecheck` to later on detect if the anti-debug checks were done properly.
 
-It is important to mention that possibly `IDA Pro` does not detect the JNI callbacks as functions. For solving so, just go to the exports windows and make a procedure by pressing the key `P` on the export `Java_sg_vantagepoint_uncrackable3_MainActivity_init`. After that, you will also need to redefine the method signature by pressing the key `Y` when located at the function declaration of it. You can define the `JNIEnv*` objects to get better C-like code as the code shown below.
-
-The JNI call starts executing the `anti_debug` function, then copies the `xorkey` into a global variable and also increments the global counter `codecheck` to later on detect if the anti-debug checks were done properly.
-
-The JNI call `Java_sg_vantagepoint_uncrackable3_MainActivity_init` gets decompiled as follows:
+This JNI call gets decompiled as follows:
 ```c
 int *__fastcall Java_sg_vantagepoint_uncrackable3_MainActivity_init(JNIEnv *env, jobject this, char *xorkey)
 {
