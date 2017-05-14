@@ -38,21 +38,38 @@ The following list illustrates different tools that could be used with the same 
 My selection of tools was as such; `Frida` for performing dynamic analysis, `Hexrays` for native decompilation and `BytecodeViewer` (Procyon) for Java decompilation. The `Hexrays` decompiler was used because its reliable decompilation on ARM code. However, `Radare2` plus open-source decompilers can also do a great job.
 
 
+
 **Before get started:**
 
 To begin with, consider the remarks below before analyzing the APK:
 
 * The Android phone needs to be rooted.
-* There are two previous levels with less difficulty, I would first recommend you to take a peek at the other write-ups before reading this one.
 * Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
 * The native layer is where the important code is executed. Do not be distracted with the Dalvik bytecode.
+* My solution(s) is/are a possible way to solve the challenge, but others ways are also totally valid.
 
+
+
+Anti-hacking techniques are implemented within the UnCrackable APK, principally to slow down reversers. Take a seat because now because we will have to deal with them. Very exciting though!. To sum up, we have detected the following protections on the mobile application:
+- Java anti-debugging
+- Java integrity checks
+- Java root checks
+- Native anti-DBI
+- Native anti-debugging
+- Native integrity checks of the Dalvik bytecode
+
+The following security mechanisms were not found in the application:
+- Java anti-DBI
+- Java obfuscation
+- Native obfuscation (only a bit of symbol stripping)
+- Native root checks
+- Native integrity checks of the native code itself
 
 **Possibles solutions:**
 
-This challenge could be solved in many ways. First of all we need to know what the application does. This performs a verification of the user input by verifying it against an XOR operation between a Java and native secret hidden within the application. The verification is done at the native level after sending the Java secret data through the JNI bridge to the native library. Basically, the verification is a simple `strncmp` with the user input and the `xor` of the secrets. The pseudo-code of the verification is as follows:
+This challenge could be solved in many ways. First of all we need to know what the application does. This performs a verification of the user input by verifying it against an XOR operation between a Java and native secret hidden within the application. The verification is done at the native level after sending the Java secret data through the JNI bridge to the native library. Basically, the verification is a simple `strncmp` with the user input and the `xor` operation of the secrets. The pseudo-code of the verification is as follows: (names are given by me)
 ```c
-strncmp_with_xor(user_input_native, (int)&secret, (int)&xorkey_native) == 24;
+strncmp_with_xor(user_input_native, (int)&native_secret, (int)&java_xorkey) == 24;
 ```
 
 Therefore, we need to extract two secrets to determine the right user input that display the message of success. The Java secret can be recovered very straightforward just by decompiling the APK. The native secret needs to be recovered by a reverse engineering the code though static analysis does not seem to be a good idea. Some kind of hooking or symbolic execution would be a clever idea instead of going for pure static reverse engineering. For extracting such secrets, my initial thoughts were performing:
@@ -66,23 +83,6 @@ Therefore, we need to extract two secrets to determine the right user input that
 **My Solution:**
 
 My final inclination was going for the binary instrumentation of the Android app at runtime. For that purpose, `Frida` was my choice. This tool is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX and on top of that it is being continuously improved. What else can we ask for? Let's use `Frida` then. Further info, either join the Telegram/IRC chat or read the docs at its website.
-
-**Security checks within Uncrackable Level3:**
-
-We find the following protections on the mobile application:
-- Java anti-debugging
-- Java integrity checks
-- Java root checks
-- Native anti-DBI
-- Native anti-debugging
-- Native integrity checks of the Dalvik bytecode
-
-The following security mechanisms were not found within the application:
-- Java anti-DBI
-- Java obfuscation
-- Native obfuscation (only a bit of symbol stripping)
-- Native root checks
-- Native integrity checks of the native code itself
 
 That being said, let's walk through how we can extract both secrets and reverse-engineer and instrument the target application. Note that this needs to be reversed first and then instrumented at Java and native level. Thus, we first reverse and look at both sides before placing any hook. The structure of this post is split in four sections:
 * 1. Reverse-engineering Dalvik bytecode.
@@ -599,16 +599,24 @@ The flag is: making owasp great again
 
 
 **Conclusions:**
-* TODO
-* TODO
+* None application is `UnCrackable` (or 100% secure).
+* `Frida` rocks! We overcame pretty much all the countermeasures on our way in order to obtain the valid flag. Anti-frida techniques were bypassed by hooking with `Frida`. This allowed us to bypass the security checks in different manners and also to debug the application at runtime. Just a comment, but the author of `Frida` sometimes says that he sometimes fixes `Frida` by instrumenting it with `Frida`. This is so cool!
+* Initial reverse-engineering was required before placing our `Frida` hooks.
+* Unlike the Dalvik code, native code can be more tough to deal with.
+* Native compilers can optimize too much and therefore introduce unintended bugs or behaviors.
+* Please comment the way you solved the challenge as well as give me any feedback by posting some comment on the blog.
+* Thanks a lot for the challenge Bernhard Mueller! It was so much fun to solve it. Can we expect UnCrackable Level4 to be fully anti-`Frida`? Looking forward to it!
 
 
 # Extra: Compiler optimizations.
 
-**Native verification:**
+I had to rewrite the whole write-up after Bernhard Mueller and I detected problems with the compilation flags in the native library. This took me a while to rewrite but the challenge became way more attractive now. Just for your information, the two code snippets shown below are the decompilation of the main native function. Please note that all the static operations to hide the final value were optimized and removed by the compiler.
 
+
+** Version 1:**
+The native secret was totally visible just by decompiling the native callback `Java_sg_vantagepoint_uncrackable3_CodeCheck_bar`:
 ```c
-signed int __fastcall Java_sg_vantagepoint_uncrackable3_CodeCheck_bar(JNIEnv *jni, int self, int user_input)
+signed int __fastcall Java_sg_vantagepoint_uncrackable3_CodeCheck_bar(JNIEnv *jni, jobject self, char* user_input)
 {
   int n; // r0@3
   signed int sec_xor_c; // r3@3
@@ -652,6 +660,93 @@ LABEL_8:
   return 0;
 }
 ```
+
+** Version 2:**
+There was a function, which I renamed to `protect_secret`, that was performing a bunch of operations to thwart attackers for the extraction of the flag in static mode. However, in the prologue the native secret was leaked.
+```c
+_DWORD *__fastcall protect_secret(_DWORD *secret)
+{
+  int v2; // r4@1
+  _DWORD *v3; // r0@1
+  int v4; // r1@2
+  int v5; // r6@5
+  _DWORD *v6; // r0@5
+  // REDACTED
+  int v17; // r4@21
+  // REDACTED
+
+  v2 = 1103515245 * dword_6004 + 12345;
+  dword_6004 = 1103515245 * dword_6004 + 12345;
+  v3 = malloc(8u);
+  if ( v3 )
+  {
+    *v3 = v2 & 0x7FFFFFFF;
+    v4 = 1_sub_doit__opaque_list1_1;
+    if ( 1_sub_doit__opaque_list1_1 )
+    {
+      v3[1] = *(_DWORD *)(1_sub_doit__opaque_list1_1 + 4);
+      *(_DWORD *)(v4 + 4) = v3;
+    }
+    else
+    {
+      v3[1] = v3;
+      1_sub_doit__opaque_list1_1 = (int)v3;
+    }
+  }
+  v5 = 1103515245 * v2 + 12345;
+  dword_6004 = 1103515245 * v2 + 12345;
+  v6 = malloc(8u);
+  if ( v6 )
+  {
+    *v6 = v5 & 0x7FFFFFFF;
+    v7 = 1_sub_doit__opaque_list1_1;
+    if ( 1_sub_doit__opaque_list1_1 )
+    {
+      v6[1] = *(_DWORD *)(1_sub_doit__opaque_list1_1 + 4);
+      *(_DWORD *)(v7 + 4) = v6;
+    }
+    else
+    {
+      v6[1] = v6;
+      1_sub_doit__opaque_list1_1 = (int)v6;
+    }
+  }
+  v8 = 1103515245 * v5 + 12345;
+  dword_6004 = v8;
+  v9 = malloc(8u);
+  if ( v9 )
+  {
+    *v9 = v8 & 0x7FFFFFFF;
+    v10 = 1_sub_doit__opaque_list1_1;
+    if ( 1_sub_doit__opaque_list1_1 )
+    {
+      v9[1] = *(_DWORD *)(1_sub_doit__opaque_list1_1 + 4);
+      *(_DWORD *)(v10 + 4) = v9;
+    }
+    else
+    {
+      v9[1] = v9;
+      1_sub_doit__opaque_list1_1 = (int)v9;
+    }
+  }
+
+  // REDACTED
+
+  if ( result )
+  {
+    _aeabi_memclr(secret, 25);
+    *secret = 0x1311081D;
+    secret[1] = 0x1549170F;
+    secret[2] = 0x1903000D;
+    secret[3] = 0x15131D5A;
+    secret[4] = 0x5A0E08;
+    result = (_DWORD *)0x14130817;
+    secret[5] = 0x14130817;
+  }
+  return result;
+}
+```
+
 
 **References:**
 
