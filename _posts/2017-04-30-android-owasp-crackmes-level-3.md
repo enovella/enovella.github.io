@@ -50,16 +50,12 @@ To begin with, consider the remarks below before analyzing the APK:
 
 **Possibles solutions:**
 
-This challenge could be solved in many ways. First of all we need to know what the application does. This performs a verification of user input by verifying it against an XOR operation between a Java (`java_xor_key`) and native secret (`native_secret`) hidden within the native library. The verification is done at the native level after sending the Java secret data through the JNI bridge to the native library. The pseudo-code of the verification is as follows:
-
+This challenge could be solved in many ways. First of all we need to know what the application does. This performs a verification of the user input by verifying it against an XOR operation between a Java and native secret hidden within the application. The verification is done at the native level after sending the Java secret data through the JNI bridge to the native library. Basically, the verification is a simple `strncmp` with the user input and the `xor` of the secrets. The pseudo-code of the verification is as follows:
 ```c
-if (verification(java_xor_key ^ native_secret) == user_input) {
-  return 1;
-}
+strncmp_with_xor(user_input_native, (int)&secret, (int)&xorkey_native) == 24;
 ```
 
-
-Therefore, we need to extract several secrets to determine the right user input that display the message of success. The Java secret can be recovered just by decompiling the APK. The native secret needs to be recovered by a reverse engineering the code. For doing so, my initial thoughts were performing:
+Therefore, we need to extract two secrets to determine the right user input that display the message of success. The Java secret can be recovered very straightforward just by decompiling the APK. The native secret needs to be recovered by a reverse engineering the code though static analysis does not seem to be a good idea. Some kind of hooking or symbolic execution would be a clever idea instead of going for pure static reverse engineering. For extracting such secrets, my initial thoughts were performing:
 
 * static reverse engineering of the Dalvik and native code plus code emulation with `Unicorn`.
 * static reverse engineering of the Dalvik and native code plus symbolic execution by using `angr`.
@@ -69,7 +65,7 @@ Therefore, we need to extract several secrets to determine the right user input 
 
 **My Solution:**
 
-My final inclination was going for the binary instrumentation of the Android app at runtime. For that purpose, `Frida` is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX and on top of that it is being continuously improved. What else can we ask for? Let's use `Frida` then.
+My final inclination was going for the binary instrumentation of the Android app at runtime. For that purpose, `Frida` was my choice. This tool is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX and on top of that it is being continuously improved. What else can we ask for? Let's use `Frida` then. Further info, either join the Telegram/IRC chat or read the docs at its website.
 
 **Security checks within Uncrackable Level3:**
 
@@ -88,7 +84,13 @@ The following security mechanisms were not found within the application:
 - Native root checks
 - Native integrity checks of the native code itself
 
-## Dalvik bytecode. Reverse-engineering
+That being said, let's walk through how we can extract both secrets and reverse-engineer and instrument the target application. Note that this needs to be reversed first and then instrumented at Java and native level. Thus, we first reverse and look at both sides before placing any hook. The structure of this post is split in four sections:
+* 1. Reverse-engineering Dalvik bytecode.
+* 2. Reverse-engineering native code.
+* 3. Instrumenting Dalvik bytecode with `Frida`.
+* 4. Instrumenting native code with `Frida`.
+
+## 1. Reverse-engineering Dalvik bytecode
 
 First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
@@ -325,24 +327,8 @@ public class RootDetection {
     }
 }
 ```
-## Dalvik bytecode. Dynamic binary instrumentation with `Frida`
 
-
-```java
-Java.perform(function () {
-    send("Placing Java hooks...");
-
-    var sys = Java.use("java.lang.System");
-    sys.exit.overload("int").implementation = function(var_0) {
-        send("java.lang.System.exit(I)V  // We avoid exiting the application  :)");
-    };
-
-    send("Done Java hooks installed.");
-});
-```
-
-
-## Native code. Reverse-engineering
+2. Reverse-engineering native code
 
 **Native constructor: Section `.init_array`**
 
@@ -487,9 +473,22 @@ u0_a92    7593  563   1633840 76644 SyS_epoll_ 7f99a8fb6c S sg.vantagepoint.uncr
 u0_a92    7614  7593  1585956 37604 ptrace_sto 7f99b37e3c t sg.vantagepoint.uncrackable3
 ```
 
+## 3. Instrumenting Dalvik bytecode with `Frida`
 
-## Native code. Dynamic binary instrumentation with `Frida`
+```java
+Java.perform(function () {
+    send("Placing Java hooks...");
 
+    var sys = Java.use("java.lang.System");
+    sys.exit.overload("int").implementation = function(var_0) {
+        send("java.lang.System.exit(I)V  // We avoid exiting the application  :)");
+    };
+
+    send("Done Java hooks installed.");
+});
+```
+
+## 4. Instrumenting native code with `Frida`
 
 <div style="text-align:center" markdown="1">
 ![3](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/pthread_create.png "Cross-references to pthread_create"){: .center-image }
