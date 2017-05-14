@@ -13,30 +13,6 @@ categories: [android, reverse]
 
 This post details a way of solving the level 3 of the Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know a bit about binary disassemblers, decompilers, bytecode and crackmes before reading this post. Anyhow, you can go further with the reading although some steps might be omitted.
 
-**Toolbox: Choose your guns!**
-
-The following list illustrates different tools that could be used with the same goal. Feel free to pick the ones you prefer the most:
-
-* Android phone or emulator to run the crackme APK.
-* Reverse-engineering:
-    - Disassemblers:
-        + `Radare2` from git.
-        + `IDA Pro`.
-    - Decompilers:
-        + Native code:
-            * `Hexrays`.
-            * `Retdec`.
-            * `Snowman`.
-        + Dalvik bytecode:
-            * `BytecodeViewer` (including various decompilers such as `Procyon`, `JD-GUI`, `CFR`,...).
-            * `Jadx-gui`.
-            * `JEB`.
-* Dynamic binary instrumentation (DBI) framework:
-    - `Frida`.
-    - `Xposed`.
-
-My selection of tools was as such; `Frida` for performing dynamic analysis, `Hexrays` for native decompilation and `BytecodeViewer` (Procyon) for Java decompilation. The `Hexrays` decompiler was used because its reliable decompilation on ARM code. However, `Radare2` plus open-source decompilers can also do a great job.
-
 
 
 **Before get started:**
@@ -46,7 +22,7 @@ To begin with, consider the remarks below before analyzing the APK:
 * The Android phone needs to be rooted.
 * Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
 * The native layer is where the important code is executed. Do not be distracted with the Dalvik bytecode.
-* My solution(s) is/are a possible way to solve the challenge, but others ways are also totally valid.
+* My solutions are a just possible way to solve the challenge, though others ways may be also okay.
 
 
 **Security mechanisms:**
@@ -91,6 +67,32 @@ That being said, let's walk through how we can extract both secrets and reverse-
 * 2. Reverse-engineering native code.
 * 3. Instrumenting Dalvik bytecode with `Frida`.
 * 4. Instrumenting native code with `Frida`.
+
+
+**Toolbox: Choose your guns!**
+
+The following list illustrates different tools that could be used with the same goal. Feel free to pick the ones you prefer the most:
+
+* Android phone or emulator to run the crackme APK.
+* Reverse-engineering:
+    - Disassemblers:
+        + `Radare2` from git.
+        + `IDA Pro`.
+    - Decompilers:
+        + Native code:
+            * `Hexrays`.
+            * `Retdec`.
+            * `Snowman`.
+        + Dalvik bytecode:
+            * `BytecodeViewer` (including various decompilers such as `Procyon`, `JD-GUI`, `CFR`,...).
+            * `Jadx-gui`.
+            * `JEB`.
+* Dynamic binary instrumentation (DBI) framework:
+    - `Frida`.
+    - `Xposed`.
+
+My selection of tools was as such; `Frida` for performing dynamic analysis, `Hexrays` for native decompilation and `BytecodeViewer` (Procyon) for Java decompilation. The `Hexrays` decompiler was used because its reliable decompilation on ARM code. However, `Radare2` plus open-source decompilers can also do a great job.
+
 
 ## 1. Reverse-engineering Dalvik bytecode
 
