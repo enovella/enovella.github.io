@@ -339,7 +339,7 @@ public class RootDetection {
 
 The Java (Dalvik) and native code are communicated through JNI calls. When the Java code is started, this loads the native code and initializes it with a bunch of bytes containing the Java secret. The native code is not obfuscated although it was slightly stripped and not statically compiled. Therefore, we still have symbols in the binary.
 
-It is important to mention that possibly `IDA Pro` does not detect the JNI callbacks as functions. For solving so, just go to the exports windows and make a procedure by pressing the key `P` on the export `Java_sg_vantagepoint_uncrackable3_MainActivity_*`. After that, you will also need to redefine the method signature by pressing the key `Y` when located at the function declaration of it. You can define the `JNIEnv*` objects to get better C-like code as the C-like code shown in this section.
+It is important to mention that possibly `IDA Pro` does not detect the JNI callbacks as functions. For solving so, just go to the exports windows and make a procedure by pressing the key `P` on the export `Java_sg_vantagepoint_uncrackable3_MainActivity_*`. After that, you will also need to redefine the method signature by pressing the key `Y` when located at the function declaration of it. You can define the `JNIEnv*` objects to get better decompilation as the C-like code shown in this section.
 
 **Native constructor:**
 
@@ -501,17 +501,103 @@ Java.perform(function () {
 
 ## 4. Instrumenting native code with `Frida`
 
+As seen in the reversing of native code, there were several libc functions, such as `strstr`, performing some checks for `Frida` and `Xposed`. Furthermore, the app was also creating threads to seamless check for debuggers or hooking frameworks being attached to the app. At this stage, we can plan our strategy on how to bypass these checks. A couple of ways came to my mind, either hook `strstr` or `pthread_create`. We will walk through in both cases and will show how to place your hooks to achieve the same no matter which hook you chose. Notice that in both cases, the app needs to be spawned due to the fact that `Frida` injects its agent within the memory of the app and then it gets de-attached. Therefore, anti-debugging checks are not a big issue.
+
+**Hooking `strstr` and disabling the anti-frida checks**
+
+Basically, we want to interfere the behavior of this line of decompiled code:
+```c
+if ( strstr(&s, "frida") || strstr(&s, "xposed") )
+{
+    _android_log_print(2, "UnCrackable3", "Tampering detected! Terminating...");
+    goodbye();
+}
+```
+
+For hooking this libc function, we can write a `Frida` hooks as such: (Uncomment comments if you want to observe the behavior)
+```java
+// char *strstr(const char *haystack, const char *needle);
+Interceptor.attach(Module.findExportByName("libc.so", "strstr"), {
+
+    onEnter: function (args) {
+
+        this.haystack = args[0];
+        this.needle   = args[1];
+        this.frida    = Boolean(0);
+
+        haystack = Memory.readUtf8String(this.haystack);
+        needle   = Memory.readUtf8String(this.needle);
+
+        //send("onEnter() strstr(\"" + haystack + "\",\"" + needle + "\");");
+        if ( haystack.indexOf("frida") != -1 || haystack.indexOf("xposed") != -1 ) {
+            //send("onEnter() strstr(\"" + haystack + "\",\"" + needle + "\");");
+            //send("onEnter() Frida/Xposed hooked!");
+            this.frida = Boolean(1);
+        }
+    },
+
+    onLeave: function (retval) {
+
+        if (this.frida) {
+            var fakeRet = ptr(0);
+            //send("onLeave() Frida real retval = " + retval );
+            //send("onLeave() Frida fake retval = " + fakeRet );
+            //send("strstr(frida) was patched!! :) " + haystack);
+            retval.replace(0);
+        }
+
+        //send("onLeave() strstr ret: " + retval);
+        return retval;
+    }
+});
+```
+The output shown below is after spawning the application with the `strstr` hook:
+```bash
+[20:15 edu@ubuntu hooks] > python run_usb_spawn.py
+pid: 7846
+[*] Intercepting ...
+[!] Received: [Placing native hooks....]
+[!] Received: [arch: arm64]
+[!] Received: [Done with native hooks....]
+[!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77e6cfc000-77e6d8e000 r--p 00fb3000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77e6cfc000-77e6d8e000 r--p 00fb3000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77e6d8e000-77e6def000 rw-p 01045000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77e6d8e000-77e6def000 rw-p 01045000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff497000-77ff567000 r-xp 00000000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff497000-77ff567000 r-xp 00000000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff568000-77ff596000 r--p 000d0000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff568000-77ff596000 r--p 000d0000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff596000-77ff5f0000 rw-p 000fe000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff596000-77ff5f0000 rw-p 000fe000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+```
+
+The `strstr` hook worked like a charm! We are now undetectable for the application.
+
+**Hooking `pthread_create` and disabling the security threads**
+
+The two threads we will like to avoid have something in common, the first and third arguments are `0`:
+```c
+pthread_create(&newthread, 0, (void *(*)(void *))monitor_pid, 0);
+pthread_create(&newthread, 0, (void *(*)(void *))monitor_frida_xposed, 0);
+```
+
+If we look at the cross-references to `pthread_create`, then we realize that all the references are the callbacks we want to influence. See more in the next figure:
 <div style="text-align:center" markdown="1">
 ![3](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/pthread_create.png "Cross-references to pthread_create"){: .center-image }
 {:.image-caption}
 *Cross-references to `pthread_create`. These xrefs lead to anti-debugging and -instrumentation functions.*
 </div>
 
+
+
 The following piece of code is a replacement for the native function `pthread_create`.
 ```java
 // int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
 var p_pthread_create = Module.findExportByName("libc.so", "pthread_create");
-var pthread_create = new NativeFunction( p_pthread_create, "int", ["pointer","pointer","pointer","pointer"]);
+var pthread_create = new NativeFunction( p_pthread_create, "int", ["pointer", "pointer", "pointer", "pointer"]);
 send("NativeFunction pthread_create() replaced @ " + pthread_create);
 
 Interceptor.replace( p_pthread_create, new NativeCallback(function (ptr0, ptr1, ptr2, ptr3) {
@@ -521,17 +607,18 @@ Interceptor.replace( p_pthread_create, new NativeCallback(function (ptr0, ptr1, 
         send("loading fake pthread_create because ptr1 and ptr3 are equal to 0!");
     } else {
         send("loading real pthread_create()");
-        ret = pthread_create(ptr0, ptr1, ptr2, ptr3);
+        ret = pthread_create(ptr0,ptr1,ptr2,ptr3);
     }
 
     do_native_hooks_libfoo();
 
     send("ret: " + ret);
 
-}, "int", ["pointer","pointer","pointer","pointer"]));
+}, "int", ["pointer", "pointer", "pointer", "pointer"]));
+
 ```
 
-Let's run our hook and see what's going on:
+Let's run our hook and see what's going on. Note that two native calls to `pthread_create` were hooked and thus we bypassed the security checks. Also notice that we want to avoid the calls when first and third arguments are set to zero and leave working others normal threads in the application.
 ```bash
 [20:07 edu@ubuntu hooks] > python run_usb_spawn.py
 pid: 11075
@@ -556,29 +643,6 @@ pid: 11075
 [!] Received: [pthread_create() overloaded]
 [!] Received: [loading real pthread_create()]
 [!] Received: [ret: 0]
-```
-
-The `strstr` hook worked like a charm! We are now undetectable for the application. The output shown below is after spawning the application with the hooks:
-```bash
-[20:15 edu@ubuntu hooks] > python run_usb_spawn.py
-pid: 7846
-[*] Intercepting ...
-[!] Received: [Placing native hooks....]
-[!] Received: [arch: arm64]
-[!] Received: [Done with native hooks....]
-[!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
-[!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
-[!] Received: [strstr(frida) was patched!! 77e6cfc000-77e6d8e000 r--p 00fb3000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
-[!] Received: [strstr(frida) was patched!! 77e6cfc000-77e6d8e000 r--p 00fb3000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
-[!] Received: [strstr(frida) was patched!! 77e6d8e000-77e6def000 rw-p 01045000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
-[!] Received: [strstr(frida) was patched!! 77e6d8e000-77e6def000 rw-p 01045000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
-[!] Received: [strstr(frida) was patched!! 77ff497000-77ff567000 r-xp 00000000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
-[!] Received: [strstr(frida) was patched!! 77ff497000-77ff567000 r-xp 00000000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
-[!] Received: [strstr(frida) was patched!! 77ff568000-77ff596000 r--p 000d0000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
-[!] Received: [strstr(frida) was patched!! 77ff568000-77ff596000 r--p 000d0000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
-[!] Received: [strstr(frida) was patched!! 77ff596000-77ff5f0000 rw-p 000fe000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
-[!] Received: [strstr(frida) was patched!! 77ff596000-77ff5f0000 rw-p 000fe000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
-[!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
 ```
 
 **The secret:**
