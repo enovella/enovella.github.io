@@ -652,7 +652,7 @@ pid: 11075
 [!] Received: [ret: 0]
 ```
 
-If you want to hook all the calls to `pthread_create`, you can start using this hook and observe the behavior:
+Optionally, if you want to play more with `Frida` then you will want to hook all the calls to `pthread_create`. For doing so, you can start using this hook and observe the behavior. Feel free to use this hook:
 ```java
 // int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
 var p_pthread_create = Module.findExportByName("libc.so","pthread_create");
@@ -686,6 +686,105 @@ Interceptor.attach(ptr(p_pthread_create), {
 
 **Hooking the secret:**
 
+Once arrived here, we are almost ready to go. The next native hook will consist in intercepting the arguments that are compared with the user input. In the following C-like code, we have renamed a function with the name `protect_secret` that generates the secret after a bunch of operations (you will not be happy reversing this mess!) and also the function `strncmp_with_xor`. This contains the secret to be compared with the user input. What about if we hook the parameters entering to this function?
+
+
+The verification code gets decompiled as follows: (names are given by my interpretation)
+```c
+bool __fastcall Java_sg_vantagepoint_uncrackable3_CodeCheck_bar(JNIEnv *env, jobject this, jbyte *user_input)
+{
+  bool result; // r0@6
+  int user_input_native; // [sp+1Ch] [bp-3Ch]@2
+  bool ret; // [sp+2Fh] [bp-29h]@4
+  int secret; // [sp+30h] [bp-28h]@1
+  int v9; // [sp+34h] [bp-24h]@1
+  int v10; // [sp+38h] [bp-20h]@1
+  int v11; // [sp+3Ch] [bp-1Ch]@1
+  int v12; // [sp+40h] [bp-18h]@1
+  int v13; // [sp+44h] [bp-14h]@1
+  char v14; // [sp+48h] [bp-10h]@1
+  int cookie; // [sp+4Ch] [bp-Ch]@6
+
+  v14 = 0;
+  v13 = 0;
+  v12 = 0;
+  v11 = 0;
+  v10 = 0;
+  v9 = 0;
+  secret = 0;
+  ret = codecheck == 2
+     && (protect_secret(&secret),
+         user_input_native = _JNIEnv::GetByteArrayElements(env, user_input, 0),
+         _JNIEnv::GetArrayLength(env, user_input) == 24)
+     && strncmp_with_xor(user_input_native, (int)&secret, (int)&xorkey_native) == 24;
+  result = ret;
+  if ( _stack_chk_guard == cookie )
+    result = ret;
+  return result;
+}
+```
+
+In order to prepare our hook for ``strncmp_with_xor`, we need to obtain certain offsets within the disassemble as well as get the base address of the `libc` and after that re-calculate the final pointer at runtime. Attaching to a native pointer can be done by invoking `Interceptor`. Notice that the hook `p_protect_secret` is not needed to recover the secret.
+
+```c
+var offset_anti_debug_x64   = 0x000075f0;
+var offset_anti_debug_x32   = 0x00005e90;
+var offset_protect_secret64 = 0x0000779c;
+var offset_strncmp_xor64    = 0x000077ec;
+
+function do_native_hooks_libfoo(){
+
+    var p_foo = Module.findBaseAddress('libfoo.so');
+    if (!p_foo) {
+        send("p_foo is null (libfoo.so). Returning now...");
+        return 0;
+    }
+    var p_protect_secret = p_foo.add(offset_protect_secret64);
+    var p_strncmp_xor64  = p_foo.add(offset_strncmp_xor64);
+    send("libfoo.so          @ " + p_foo.toString());
+    send("ptr_protect_secret @ " + p_protect_secret.toString());
+    send("ptr_strncmp_xor64  @ " + p_strncmp_xor64.toString());
+
+
+    Interceptor.attach( p_protect_secret, {
+        onEnter: function (args) {
+            send("onEnter() p_protect_secret");
+            send("args[0]: " + args[0]);
+        },
+
+        onLeave: function (retval) {
+            send("onLeave() p_protect_secret");
+         }
+    });
+
+    Interceptor.attach( p_strncmp_xor64, {
+        onEnter: function (args) {
+            send("onEnter() p_strncmp_xor64");
+            send("args[0]: " + args[0]);
+            send(hexdump(args[0], {
+                offset: 0,
+                length: 24,
+                header: false,
+                ansi: true
+            }));
+
+            send("args[1]: " + args[1]);
+            var secret = hexdump(args[1], {
+                offset: 0,
+                length: 24,
+                header: false,
+                ansi: true
+            })
+            send(secret);
+        },
+
+        onLeave: function (retval) {
+            send("onLeave() p_strncmp_xor64");
+            send(retval);
+         }
+    });
+}
+```
 
 
 The following python script generates the user input required to pass the challenge:
