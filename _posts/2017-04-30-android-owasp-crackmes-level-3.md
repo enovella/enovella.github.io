@@ -51,7 +51,7 @@ To begin with, consider the remarks below before analyzing the APK:
 
 **Security mechanisms:**
 
-Anti-hacking techniques are implemented within the UnCrackable APK, principally to slow down reversers. Take a seat because now because we will have to deal with them. Very exciting though!. To sum up, we have detected the following protections on the mobile application:
+Anti-hacking techniques were implemented within the UnCrackable APK, principally to slow down reversers. Take a seat because now because we will have to deal with them. Very exciting though!. To sum up, we have detected the following protections on the mobile application:
 - Java anti-debugging
 - Java integrity checks
 - Java root checks
@@ -68,7 +68,7 @@ The following security mechanisms were not found in the application:
 
 **Possibles solutions:**
 
-This challenge could be solved in many ways. First of all we need to know what the application does. This performs a verification of the user input by verifying it against an XOR operation between a Java and native secret hidden within the application. The verification is done at the native level after sending the Java secret data through the JNI bridge to the native library. Basically, the verification is a simple `strncmp` with the user input and the `xor` operation of the secrets. The pseudo-code of the verification is as follows: (names are given by me)
+This challenge could be solved in many ways. First of all we need to know what the application does underneath. This performs a verification of the user input against a secret hidden within the application. Basically, by verifying the user input against a Java and native secret xored with each other. The verification is done at the native level after sending the Java secret data through the JNI bridge to the native library. Actually, the verification is a simple `strncmp` with the user input and the `xor` operation of the secrets. The pseudo-code of the verification is as follows: (names are given by me)
 ```c
 strncmp_with_xor(user_input_native, native_secret, java_xorkey) == 24;
 ```
