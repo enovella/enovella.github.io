@@ -88,7 +88,7 @@ The following security mechanisms were not found within the application:
 - Native root checks
 - Native integrity checks of the native code itself
 
-## Java side I. Reverse-engineering Java bytecode
+## Java Bytecode. Reverse-engineering
 
 First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
@@ -325,7 +325,7 @@ public class RootDetection {
     }
 }
 ```
-## Java side II. Dynamic binary instrumentation with `Frida`
+## Java Bytecode. Dynamic binary instrumentation with `Frida`
 
 
 ```java
@@ -342,7 +342,7 @@ Java.perform(function () {
 ```
 
 
-## Native side I. Reverse-engineering native code
+## Native code. Reverse-engineering
 
 **Native constructor: Section `.init_array`**
 
@@ -360,6 +360,8 @@ Java.perform(function () {
 .init_array:0000000000019CB8
 .fini_array:0000000000019CC0                   ; ===========================================================================
 ```
+
+`Radare2` also supports the identification of the JNI init methods since very recently. Thanks to `@pancake` and `@alvaro_fe` for their quick implementation on detecting JNI entrypoints on `radare`. More info about the commits in the references.
 
 Going to the function itself, we realize that the native library also calls to the function `monitor_frida_xposed` as well as clears memory to receive a value from the Java side. Before going further with the reverse engineering, we need to fix an IDA problem with JNI. IDA does not know that several functions are defined and called at the Java level but executed at the native level. For that reason, we need to fix the function prototype of all the Java callbacks starting with the package name `Java_sg_vantagepoint_uncrackable3_`.
 
@@ -496,7 +498,7 @@ u0_a92    7614  7593  1585956 37604 ptrace_sto 7f99b37e3c t sg.vantagepoint.uncr
 
 
 
-## Native side II. Dynamic binary instrumentation with `Frida`
+## Native code. Dynamic binary instrumentation with `Frida`
 
 **The flag:**
 
@@ -586,3 +588,4 @@ LABEL_8:
 * [Frida](https://www.frida.re/)
 * [List of OWASP crackmes](https://github.com/OWASP/owasp-mstg/blob/master/Crackmes/README.md)
 * [More Android Anti-Debugging Fun](http://www.vantagepoint.sg/blog/89-more-android-anti-debugging-fun)
+* [Radare2 JNI init detection commit](https://github.com/radare/radare2/commit/0b4e63c73241245b09b41ad31fcac4b52614cadd)
