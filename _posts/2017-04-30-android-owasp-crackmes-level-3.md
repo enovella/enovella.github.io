@@ -27,7 +27,7 @@ The following list illustrates different tools that could be used with the same 
             * `Hexrays`.
             * `Retdec`.
             * `Snowman`.
-        + Java bytecode:
+        + Dalvik bytecode:
             * `BytecodeViewer` (including various decompilers such as `Procyon`, `JD-GUI`, `CFR`,...).
             * `Jadx-gui`.
             * `JEB`.
@@ -45,7 +45,7 @@ To begin with, consider the remarks below before analyzing the APK:
 * The Android phone needs to be rooted.
 * There are two previous levels with less difficulty, I would first recommend you to take a peek at the other write-ups before reading this one.
 * Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
-* The native layer is where the important code is executed. Do not be distracted with the Java bytecode.
+* The native layer is where the important code is executed. Do not be distracted with the Dalvik bytecode.
 
 
 **Possibles solutions:**
@@ -61,10 +61,10 @@ if (verification(java_xor_key ^ native_secret) == user_input) {
 
 Therefore, we need to extract several secrets to determine the right user input that display the message of success. The Java secret can be recovered just by decompiling the APK. The native secret needs to be recovered by a reverse engineering the code. For doing so, my initial thoughts were performing:
 
-* static reverse engineering of the Java and native code plus code emulation with `Unicorn`.
-* static reverse engineering of the Java and native code plus symbolic execution by using `angr`.
+* static reverse engineering of the Dalvik and native code plus code emulation with `Unicorn`.
+* static reverse engineering of the Dalvik and native code plus symbolic execution by using `angr`.
 * static reverse engineering plus dynamic analysis by using `Frida`.
-* patching Java and native code to NOP out all the security checks using `Radare2`.
+* patching Smali code (Dalvik) and native code to NOP out all the security checks using `Radare2`.
 
 
 **My Solution:**
@@ -79,7 +79,7 @@ We find the following protections on the mobile application:
 - Java root checks
 - Native anti-DBI
 - Native anti-debugging
-- Native integrity checks of the Java bytecode
+- Native integrity checks of the Dalvik bytecode
 
 The following security mechanisms were not found within the application:
 - Java anti-DBI
@@ -88,17 +88,17 @@ The following security mechanisms were not found within the application:
 - Native root checks
 - Native integrity checks of the native code itself
 
-## Java Bytecode. Reverse-engineering
+## Dalvik bytecode. Reverse-engineering
 
 First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
-* `./classes.dex` contains the Java bytecode.
+* `./classes.dex` contains the Dalvik bytecode.
 * `./lib/arm64-v8a/libfoo.so` is a native library that contains ARM64 assembly code. We refer to this when talking about native code during this post (feel free to use the x86/ARM32 code if preferred). As I was running the app in a Nexus5X, the library to reverse engineer was the compiled for ARM64 architectures.
 
 <div style="text-align:center" markdown="1">
 ![1](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/package-tree.png "APK packages overview"){: .center-image }
 {:.image-caption}
-*APK packages overview. Decompilation of the Java bytecode (`classes.dex`)*
+*APK packages overview. Source code decompiled from the Dalvik bytecode (`classes.dex`)*
 </div>
 
 The following code snippet was obtained by decompiling the main class of the uncrackable app Level3. This has the interesting points to discuss:
@@ -184,7 +184,7 @@ protected void onCreate(Bundle savedInstanceState) {
 
 **Integrity checks:**
 
-As already mentioned above, integrity checks for native libraries and Java bytecode are identified in the function `verifyLibs`. Notice that repackaging the Java bytecode and native code may be still possible. For doing that, just by patching out the function `verifyLibs` in the Java bytecode and the function `baz` in the native library, an attacker could bypass all the integrity checks and thus continue attacking the mobile app. The function responsible for verifying libraries gets decompiled as follows:
+As already mentioned above, integrity checks for native libraries and Dalvik bytecode are identified in the function `verifyLibs`. Notice that repackaging the Dalvik bytecode and native code may be still possible. For doing that, just by patching out the function `verifyLibs` in the Dalvik bytecode and the function `baz` in the native library, an attacker could bypass all the integrity checks and thus continue attacking the mobile app. The function responsible for verifying libraries gets decompiled as follows:
 
 ```java
 private void verifyLibs() {
@@ -325,7 +325,7 @@ public class RootDetection {
     }
 }
 ```
-## Java Bytecode. Dynamic binary instrumentation with `Frida`
+## Dalvik bytecode. Dynamic binary instrumentation with `Frida`
 
 
 ```java
@@ -424,7 +424,7 @@ On the DBI section, we will walk you through on how to bypass these checks by in
 
 **Native anti-debugging checks:**
 
-The Java and native code are communicated through JNI calls. When the Java code is started, this loads the native code and initializes it with a bunch of bytes containing the Java secret. The native code is not obfuscated although it was slightly stripped and compiled dynamically. Therefore, we can still have symbols and strings in the clear. Notice that the following C-like code we are going to review, it has been renamed by the author depending on the interpretation of the callbacks.
+The Java (Dalvik) and native code are communicated through JNI calls. When the Java code is started, this loads the native code and initializes it with a bunch of bytes containing the Java secret. The native code is not obfuscated although it was slightly stripped and compiled dynamically. Therefore, we can still have symbols and strings in the clear. Notice that the following C-like code we are going to review, it has been renamed by the author depending on the interpretation of the callbacks.
 
 It is important to mention that possibly `IDA Pro` does not detect the JNI callbacks as functions. For solving so, just go to the exports windows and make a procedure by pressing the key `P` on the export `Java_sg_vantagepoint_uncrackable3_MainActivity_init`. After that, you will also need to redefine the method signature by pressing the key `Y` when located at the function declaration of it. You can define the `JNIEnv*` objects to get better C-like code as the code shown below.
 
@@ -501,7 +501,7 @@ The following piece of code is a replacement for the native function `pthread_cr
 ```java
 // int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
 var p_pthread_create = Module.findExportByName("libc.so", "pthread_create");
-var pthread_create = new NativeFunction( p_pthread_create, 'int', ['pointer','pointer','pointer','pointer']);
+var pthread_create = new NativeFunction( p_pthread_create, "int", ["pointer","pointer","pointer","pointer"]);
 send("NativeFunction pthread_create() replaced @ " + pthread_create);
 
 Interceptor.replace( p_pthread_create, new NativeCallback(function (ptr0, ptr1, ptr2, ptr3) {
@@ -518,7 +518,7 @@ Interceptor.replace( p_pthread_create, new NativeCallback(function (ptr0, ptr1, 
 
     send("ret: " + ret);
 
-}, 'int', ['pointer','pointer','pointer','pointer']));
+}, "int", ["pointer","pointer","pointer","pointer"]));
 ```
 
 Let's run our hook and see what's going on:
