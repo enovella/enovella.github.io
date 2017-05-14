@@ -337,6 +337,9 @@ public class RootDetection {
 
 ## 2. Reverse-engineering native code
 
+
+**Native constructor:**
+
 An ELF binary contains a section called `.init_array` which holds the pointers to functions that will be executed when the program starts. If we observe what this ARM shared object has in its constructor, then we can see the following function pointer `sub_73D0` at offset `0x19cb0`: (in IDA Pro uses the shortcut `ctrl`+`s` for showing sections)
 
 ```c
@@ -384,7 +387,7 @@ int init()
 
 Finally, the function `monitor_frida_xposed`  performs several security checks in order to avoid people instrumenting the application. If we take a peek at the following decompiled code, then we observe that several frameworks for dynamic binary instrumentation are blacklisted. This check is done over and over in an infinite loop.
 
-The the function `monitor_frida_xposed` gets decompiled as follows:
+The function `monitor_frida_xposed` gets decompiled as follows:
 ```c
 void __fastcall __noreturn monitor_frida_xposed(int a1)
 {
