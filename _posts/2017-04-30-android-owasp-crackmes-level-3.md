@@ -88,7 +88,7 @@ The following list illustrates different tools that could be used with the same 
 My selection of tools was as such; `Frida` for performing dynamic analysis, `Hexrays` for native decompilation and `BytecodeViewer` (Procyon) for Java decompilation. The `Hexrays` decompiler was used because its reliable decompilation on ARM code. However, `Radare2` plus open-source decompilers can also do a great job.
 
 
-# Extracting the flag
+# Extracting the hidden secret
 Let's walk through how we can extract both secrets by reverse-engineering and instrumenting the target application. Note that this needs to be reversed first and then instrumented at the Java and native level. The structure of this post is split in four sections:
 
 * Reverse-engineering Dalvik bytecode.
@@ -233,7 +233,7 @@ private void verifyLibs() {
 }
 ```
 
-On top of these integrity checks, we also observe the class `IntegrityCheck` that verifies that the application has not been tampered with and thus does not contain the flag of debuggable. This class gets decompiled as follows:
+On top of these integrity checks, we also observe the class `IntegrityCheck` that verifies that the application has not been tampered with and thus does not contain the debuggable flag. This class gets decompiled as follows:
 
 ```java
 package sg.vantagepoint.util;
@@ -576,7 +576,7 @@ pid: 7846
 [!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
 ```
 
-**The flag:**
+**The secret:**
 
 The following python script generates the user input required to pass the challenge:
 ```python
@@ -587,26 +587,26 @@ def xor_strings(xs, ys):
     return "".join(chr(ord(x) ^ ord(y)) for x, y in zip(xs, ys))
 
 user_input = xor_strings(secret,xorkey)
-print "The flag is: " + user_input
+print "The secret is: " + user_input
 ```
 
-Eventually, we got the flag:
+Eventually, we got the secret:
 ```bash
 [21:07 edu@ubuntu level3] > python getflag.py
-The flag is: making owasp great again
+The secret is: making owasp great again
 ```
 
 
 <div style="text-align:center" markdown="1">
-![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3.png "Flag: making owasp great again"){: .center-image }
+![2](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level3.png "Secret: making owasp great again"){: .center-image }
 {:.image-caption}
-*Flag: **making owasp great again***
+*Secret: **making owasp great again***
 </div>
 
 
 **Conclusions:**
 * None application is `UnCrackable` (or 100% secure).
-* `Frida` rocks! We overcame pretty much all the countermeasures on our way in order to obtain the valid flag. Anti-frida techniques were bypassed by hooking with `Frida`. This allowed us to bypass the security checks in different manners and also to debug the application at runtime. Just a comment, but the author of `Frida` sometimes says that he sometimes fixes `Frida` by instrumenting it with `Frida`. This is so cool!
+* `Frida` rocks! We overcame pretty much all the countermeasures on our way in order to obtain the valid secret. Anti-frida techniques were bypassed by hooking with `Frida`. This allowed us to bypass the security checks in different manners and also to debug the application at runtime. Just a comment, but the author of `Frida` sometimes says that he sometimes fixes `Frida` by instrumenting it with `Frida`. This is so cool!
 * Initial reverse-engineering was required before placing `Frida` hooks.
 * Unlike the Dalvik code, native code can be more tough to deal with.
 * Native compilers can optimize too much and therefore introduce unintended bugs or behaviors.
