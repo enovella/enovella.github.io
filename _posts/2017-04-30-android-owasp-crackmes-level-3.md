@@ -794,7 +794,7 @@ This hook gives us the following output:
 </div>
 
 
-The following python script generates the user input required to pass the challenge:
+The following python script generates the user input required to pass the challenge based on the secrets previously recovered:
 ```python
 secret = "1d0811130f1749150d0003195a1d1315080e5a0017081314".decode("hex")
 xorkey = "pizzapizzapizzapizzapizz"
@@ -819,6 +819,7 @@ The secret is: making owasp great again
 *Secret: **making owasp great again***
 </div>
 
+The source code of all the hooks can be found at my GitHub page in the `androidtrainings` repository. Salud!
 
 **Conclusions:**
 * None application is `UnCrackable` (or 100% secure).
