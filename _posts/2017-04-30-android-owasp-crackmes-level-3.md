@@ -488,17 +488,88 @@ u0_a92    7614  7593  1585956 37604 ptrace_sto 7f99b37e3c t sg.vantagepoint.uncr
 ```
 
 
+## Native code. Dynamic binary instrumentation with `Frida`
+
+
 <div style="text-align:center" markdown="1">
 ![3](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/pthread_create.png "Cross-references to pthread_create"){: .center-image }
 {:.image-caption}
 *Cross-references to `pthread_create`. These xrefs lead to anti-debugging and -instrumentation functions.*
 </div>
 
+The following piece of code is a replacement for the native function `pthread_create`.
+```java
+// int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
+var p_pthread_create = Module.findExportByName("libc.so", "pthread_create");
+var pthread_create = new NativeFunction( p_pthread_create, 'int', ['pointer','pointer','pointer','pointer']);
+send("NativeFunction pthread_create() replaced @ " + pthread_create);
 
+Interceptor.replace( p_pthread_create, new NativeCallback(function (ptr0, ptr1, ptr2, ptr3) {
+    send("pthread_create() overloaded");
+    var ret = ptr(0);
+    if (ptr1.isNull() && ptr3.isNull()) {
+        send("loading fake pthread_create because ptr1 and ptr3 are equal to 0!");
+    } else {
+        send("loading real pthread_create()");
+        ret = pthread_create(ptr0, ptr1, ptr2, ptr3);
+    }
 
+    do_native_hooks_libfoo();
 
+    send("ret: " + ret);
 
-## Native code. Dynamic binary instrumentation with `Frida`
+}, 'int', ['pointer','pointer','pointer','pointer']));
+```
+
+Let's run our hook and see what's going on:
+```bash
+[20:07 edu@ubuntu hooks] > python run_usb_spawn.py
+pid: 11075
+[*] Intercepting ...
+[!] Received: [Placing native hooks....]
+[!] Received: [arch: arm64]
+[!] Received: [NativeFunction pthread_create() replaced @ 0x7ef5b63170]
+[!] Received: [Done with native hooks....]
+[!] Received: [pthread_create() overloaded]
+[!] Received: [loading real pthread_create()]
+[!] Received: [p_foo is null (libfoo.so). Returning now...]
+[!] Received: [ret: 0]
+[!] Received: [pthread_create() overloaded]
+[!] Received: [loading fake pthread_create because ptr1 and ptr3 are equal to 0!]
+[!] Received: [ret: 0x0]
+[!] Received: [pthread_create() overloaded]
+[!] Received: [loading fake pthread_create because ptr1 and ptr3 are equal to 0!]
+[!] Received: [ret: 0x0]
+[!] Received: [pthread_create() overloaded]
+[!] Received: [loading real pthread_create()]
+[!] Received: [ret: 0]
+[!] Received: [pthread_create() overloaded]
+[!] Received: [loading real pthread_create()]
+[!] Received: [ret: 0]
+```
+
+The `strstr` hook worked like a charm! We are now undetectable for the application. The output shown below is after spawning the application with the hooks:
+```bash
+[20:15 edu@ubuntu hooks] > python run_usb_spawn.py
+pid: 7846
+[*] Intercepting ...
+[!] Received: [Placing native hooks....]
+[!] Received: [arch: arm64]
+[!] Received: [Done with native hooks....]
+[!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77e6cfc000-77e6d8e000 r--p 00fb3000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77e6cfc000-77e6d8e000 r--p 00fb3000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77e6d8e000-77e6def000 rw-p 01045000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77e6d8e000-77e6def000 rw-p 01045000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff497000-77ff567000 r-xp 00000000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff497000-77ff567000 r-xp 00000000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff568000-77ff596000 r--p 000d0000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff568000-77ff596000 r--p 000d0000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff596000-77ff5f0000 rw-p 000fe000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77ff596000-77ff5f0000 rw-p 000fe000 fd:00 752212    /data/local/tmp/re.frida.server/frida-loader-64.so]
+[!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
+```
 
 **The flag:**
 
