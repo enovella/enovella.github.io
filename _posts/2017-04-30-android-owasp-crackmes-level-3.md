@@ -385,7 +385,9 @@ int init()
 }
 ```
 
-Finally, the function `monitor_frida_xposed`  performs several security checks in order to avoid people instrumenting the application. If we take a peek at the following decompiled code, then we observe that several frameworks for dynamic binary instrumentation are blacklisted. This check is done over and over in an infinite loop.
+**Native anti-hooking checks:**
+
+The function `monitor_frida_xposed` performs several security checks in order to avoid people instrumenting the application. If we take a peek at the following decompiled code, then we observe that several frameworks for dynamic binary instrumentation are blacklisted. This check is done over and over in an infinite loop.
 
 The function `monitor_frida_xposed` gets decompiled as follows:
 ```c
