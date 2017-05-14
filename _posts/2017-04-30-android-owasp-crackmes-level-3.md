@@ -18,14 +18,16 @@ This post details several ways of solving the level 3 of the Android crackmes re
 To begin with, consider the remarks below before analyzing the APK:
 
 * The Android phone needs to be rooted.
-* Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
+* Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but extract the secret.
 * The native layer is where the important code is executed. Do not be distracted with the Dalvik bytecode.
-* My solutions are just a way to solve the challenge.
+* My solutions are just a way to solve the challenge. Maybe there are better and clever solutions appearing soon.
 
 
 **Security mechanisms:**
 
-Anti-hacking techniques were implemented within the UnCrackable APK, principally to slow down reversers. Take a seat because now because we will have to deal with them. Very exciting though!. To sum up, we have detected the following protections on the mobile application:
+Anti-hacking techniques were implemented within the UnCrackable APK, principally to slow down reversers. Take a seat because now because we will have to deal with them.
+
+We have detected the following protections on the mobile application:
 - Java anti-debugging
 - Java integrity checks
 - Java root checks
