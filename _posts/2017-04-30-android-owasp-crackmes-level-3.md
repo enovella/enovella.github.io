@@ -11,7 +11,7 @@ categories: [android, reverse]
 *"An Android crackme arose from hell. It doesn't make prisoners"*
 </div>
 
-This post details several ways of solving the level 3 of the Android crackmes released by the OWASP guys.
+This post details several ways of solving the level 3 of the Android crackmes released by the OWASP guys (Bernhard Mueller).
 
 **Before get started:**
 
@@ -20,7 +20,7 @@ To begin with, consider the remarks below before analyzing the APK:
 * The Android phone needs to be rooted.
 * Anti-instrumentation, anti-debugging, anti-tampering and anti-rooting checks are in place both at the Java and native level. We do not need to bypass all of them but get the flag.
 * The native layer is where the important code is executed. Do not be distracted with the Dalvik bytecode.
-* My solutions are a just possible way to solve the challenge, though others ways may be also okay.
+* My solutions are just a way to solve the challenge.
 
 
 **Security mechanisms:**
