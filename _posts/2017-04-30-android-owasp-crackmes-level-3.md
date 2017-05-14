@@ -49,6 +49,7 @@ To begin with, consider the remarks below before analyzing the APK:
 * My solution(s) is/are a possible way to solve the challenge, but others ways are also totally valid.
 
 
+**Security mechanisms:**
 
 Anti-hacking techniques are implemented within the UnCrackable APK, principally to slow down reversers. Take a seat because now because we will have to deal with them. Very exciting though!. To sum up, we have detected the following protections on the mobile application:
 - Java anti-debugging
@@ -85,6 +86,7 @@ Therefore, we need to extract two secrets to determine the right user input that
 My final inclination was going for the binary instrumentation of the Android app at runtime. For that purpose, `Frida` was my choice. This tool is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX and on top of that it is being continuously improved. What else can we ask for? Let's use `Frida` then. Further info, either join the Telegram/IRC chat or read the docs at its website.
 
 That being said, let's walk through how we can extract both secrets and reverse-engineer and instrument the target application. Note that this needs to be reversed first and then instrumented at Java and native level. Thus, we first reverse and look at both sides before placing any hook. The structure of this post is split in four sections:
+
 * 1. Reverse-engineering Dalvik bytecode.
 * 2. Reverse-engineering native code.
 * 3. Instrumenting Dalvik bytecode with `Frida`.
