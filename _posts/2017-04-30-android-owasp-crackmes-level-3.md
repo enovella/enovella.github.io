@@ -109,10 +109,10 @@ First of all, several files need to be unpacked from the APK to be reverse engin
 *APK packages overview. Source code decompiled from the Dalvik bytecode (`classes.dex`)*
 </div>
 
-The following code snippet was obtained by decompiling the main class of the uncrackable app Level3. This has the interesting points to discuss:
+The code snippet shown below was obtained by decompiling the main class of the UnCrackable app Level3. This has the interesting points to discuss:
 
 * a hardcoded key in the code (`String xorkey = "pizzapizzapizzapizzapizz"`).
-* The loading of the native library `libfoo.so` and declaration of two native methods: `init()` and `baz()`, which will be invoked through JNI calls. Notice that the native method is initialized with the xorkey.
+* The loading of the native library `libfoo.so` and declaration of two native methods: `init()` and `baz()`, which will be invoked through JNI calls. Notice that one  method is initialized with the xorkey.
 * Variables and class fields to keep track if tampering has been detected at runtime.
 
 
@@ -192,8 +192,9 @@ protected void onCreate(Bundle savedInstanceState) {
 
 **Integrity checks:**
 
-As already mentioned above, integrity checks for native libraries and Dalvik bytecode are identified in the function `verifyLibs`. Notice that repackaging the Dalvik bytecode and native code may be still possible. For doing that, just by patching out the function `verifyLibs` in the Dalvik bytecode and the function `baz` in the native library, an attacker could bypass all the integrity checks and thus continue attacking the mobile app. The function responsible for verifying libraries gets decompiled as follows:
+As already mentioned above, integrity checks for native libraries and Dalvik bytecode are identified in the function `verifyLibs`. Notice that repackaging the Dalvik bytecode and native code may be still feasible. Just by patching out the function `verifyLibs` in the Dalvik bytecode and the function `baz` in the native library, an attacker could bypass all the integrity checks and thus continue attacking the mobile app at will. 
 
+The function responsible for verifying libraries gets decompiled as follows:
 ```java
 private void verifyLibs() {
     (this.crc = new HashMap<String, Long>()).put("armeabi", Long.parseLong(this.getResources().getString(2131099684)));
@@ -233,7 +234,7 @@ private void verifyLibs() {
 }
 ```
 
-On top of these integrity checks, we also observe the class `IntegrityCheck` that verifies that the application has not been tampered with and thus does not contain the debuggable flag. This class gets decompiled as follows:
+On top of these integrity checks, we also observe the class `IntegrityCheck` also verifies that the application has not been tampered with and thus does not contain the debuggable flag. This class gets decompiled as follows:
 
 ```java
 package sg.vantagepoint.util;
