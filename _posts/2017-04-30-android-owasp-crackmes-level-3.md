@@ -335,14 +335,12 @@ public class RootDetection {
 }
 ```
 
-2. Reverse-engineering native code
+## 2. Reverse-engineering native code
 
-**Native constructor: Section `.init_array`**
-
- An ELF binary contains a section called `.init_array` which holds the pointers to functions that will be executed when the program starts. If we observe what this ARM shared object has in its constructor, then we can see the following function pointer `sub_73D0` at offset `0x19cb0`: (in IDA Pro uses the shortcut `ctrl`+`s` for showing sections)
+An ELF binary contains a section called `.init_array` which holds the pointers to functions that will be executed when the program starts. If we observe what this ARM shared object has in its constructor, then we can see the following function pointer `sub_73D0` at offset `0x19cb0`: (in IDA Pro uses the shortcut `ctrl`+`s` for showing sections)
 
 ```c
-.init_array:0000000000019CB0                   ; ===========================================================================
+.init_array:0000000000019CB0                   ; ==================================================
 .init_array:0000000000019CB0
 .init_array:0000000000019CB0                   ; Segment type: Pure data
 .init_array:0000000000019CB0                                   AREA .init_array, DATA, ALIGN=3
@@ -351,10 +349,10 @@ public class RootDetection {
 .init_array:0000000000019CB8 00 00 00 00 00 00+                ALIGN 0x20
 .init_array:0000000000019CB8 00 00             ; .init_array   ends
 .init_array:0000000000019CB8
-.fini_array:0000000000019CC0                   ; ===========================================================================
+.fini_array:0000000000019CC0                   ; ==================================================
 ```
 
-`Radare2` also supports the identification of the JNI init methods since very recently. Thanks to `@pancake` and `@alvaro_fe` for their quick implementation on detecting JNI entrypoints on `radare`. More info about the commits in the references.
+`Radare2` also supports the identification of the JNI init methods since very recently. Thanks to `@pancake` and `@alvaro_fe` for their quick implementation on supporting the detection JNI entrypoints. If you are using `radare2`, just using the command `ie` will show you the entrypoints. More info about the commits in the references.
 
 Going to the function itself, we realize that the native library also calls to the function `monitor_frida_xposed` as well as clears memory to receive a value from the Java side. Before going further with the reverse engineering, we need to fix an IDA problem with JNI. IDA does not know that several functions are defined and called at the Java level but executed at the native level. For that reason, we need to fix the function prototype of all the Java callbacks starting with the package name `Java_sg_vantagepoint_uncrackable3_`.
 
