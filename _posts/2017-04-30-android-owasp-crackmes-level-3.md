@@ -420,11 +420,13 @@ On the DBI section, we will walk you through on how to bypass these checks by in
 
 **Native anti-debugging checks:**
 
-The Java (Dalvik) and native code are communicated through JNI calls. When the Java code is started, this loads the native code and initializes it with a bunch of bytes containing the Java secret. The native code is not obfuscated although it was slightly stripped and compiled dynamically. Therefore, we can still have symbols and strings in the clear. Notice that the following C-like code we are going to review, it has been renamed by the author depending on the interpretation of the callbacks.
+The Java (Dalvik) and native code are communicated through JNI calls. When the Java code is started, this loads the native code and initializes it with a bunch of bytes containing the Java secret. The native code is not obfuscated although it was slightly stripped and not statically compiled. Therefore, we still have symbols in the binary.
 
 It is important to mention that possibly `IDA Pro` does not detect the JNI callbacks as functions. For solving so, just go to the exports windows and make a procedure by pressing the key `P` on the export `Java_sg_vantagepoint_uncrackable3_MainActivity_init`. After that, you will also need to redefine the method signature by pressing the key `Y` when located at the function declaration of it. You can define the `JNIEnv*` objects to get better C-like code as the code shown below.
 
-The JNI call performs anti-debugging checks, copies the `xorkey` into a global variable and increments the global counter `codecheck` to later on detect if the anti-debug checks were done fine. The JNI call `Java_sg_vantagepoint_uncrackable3_MainActivity_init` gets decompiled as follows:
+The JNI call performs anti-debugging checks(`anti_debug()`), copies the `xorkey` into a global variable and increments the global counter `codecheck` to later on detect if the anti-debug checks were done fine.
+
+The JNI call `Java_sg_vantagepoint_uncrackable3_MainActivity_init` gets decompiled as follows:
 ```c
 int *__fastcall Java_sg_vantagepoint_uncrackable3_MainActivity_init(JNIEnv *env, jobject this, char *xorkey)
 {
