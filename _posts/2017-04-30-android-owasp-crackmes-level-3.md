@@ -69,7 +69,7 @@ The following security mechanisms were not found in the application:
 
 This challenge could be solved in many ways. First of all we need to know what the application does. This performs a verification of the user input by verifying it against an XOR operation between a Java and native secret hidden within the application. The verification is done at the native level after sending the Java secret data through the JNI bridge to the native library. Basically, the verification is a simple `strncmp` with the user input and the `xor` operation of the secrets. The pseudo-code of the verification is as follows: (names are given by me)
 ```c
-strncmp_with_xor(user_input_native, (int)&native_secret, (int)&java_xorkey) == 24;
+strncmp_with_xor(user_input_native, native_secret, java_xorkey) == 24;
 ```
 
 Therefore, we need to extract two secrets to determine the right user input that display the message of success. The Java secret can be recovered very straightforward just by decompiling the APK. The native secret needs to be recovered by a reverse engineering the code though static analysis does not seem to be a good idea. Some kind of hooking or symbolic execution would be a clever idea instead of going for pure static reverse engineering. For extracting such secrets, my initial thoughts were performing:
@@ -601,12 +601,12 @@ The flag is: making owasp great again
 **Conclusions:**
 * None application is `UnCrackable` (or 100% secure).
 * `Frida` rocks! We overcame pretty much all the countermeasures on our way in order to obtain the valid flag. Anti-frida techniques were bypassed by hooking with `Frida`. This allowed us to bypass the security checks in different manners and also to debug the application at runtime. Just a comment, but the author of `Frida` sometimes says that he sometimes fixes `Frida` by instrumenting it with `Frida`. This is so cool!
-* Initial reverse-engineering was required before placing our `Frida` hooks.
+* Initial reverse-engineering was required before placing `Frida` hooks.
 * Unlike the Dalvik code, native code can be more tough to deal with.
 * Native compilers can optimize too much and therefore introduce unintended bugs or behaviors.
-* Please comment the way you solved the challenge as well as give me any feedback by posting some comment on the blog.
 * Thanks a lot for the challenge Bernhard Mueller! It was so much fun to solve it. Can we expect UnCrackable Level4 to be fully anti-`Frida`? Looking forward to it!
 
+That's all folks! Please comment the way you solved the challenge as well as give me any feedback by posting some comments on the blog. See you around!
 
 # Extra: Compiler optimizations.
 
@@ -614,6 +614,7 @@ I had to rewrite the whole write-up after Bernhard Mueller and I detected proble
 
 
 ** Version 1:**
+
 The native secret was totally visible just by decompiling the native callback `Java_sg_vantagepoint_uncrackable3_CodeCheck_bar`:
 ```c
 signed int __fastcall Java_sg_vantagepoint_uncrackable3_CodeCheck_bar(JNIEnv *jni, jobject self, char* user_input)
@@ -662,7 +663,8 @@ LABEL_8:
 ```
 
 ** Version 2:**
-There was a function, which I renamed to `protect_secret`, that was performing a bunch of operations to thwart attackers for the extraction of the flag in static mode. However, in the prologue the native secret was leaked.
+
+There was a function, which I renamed to `protect_secret`, that was performing a bunch of operations to thwart attackers from statically reverse engineer the code. However, in the prologue the native secret was leaked.
 ```c
 _DWORD *__fastcall protect_secret(_DWORD *secret)
 {
