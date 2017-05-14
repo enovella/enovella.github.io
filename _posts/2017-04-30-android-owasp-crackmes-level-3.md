@@ -788,9 +788,9 @@ function do_native_hooks_libfoo(){
 
 This hook gives us the following output:
 <div style="text-align:center" markdown="1">
-![5](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/frida-rocks.png "Recovering native secret: Frida rocks!"){: .center-image }
+![5](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/frida-rocks.png "Recovering the native secret: Frida rocks!"){: .center-image }
 {:.image-caption}
-*Recovering native secret: `Frida` rocks!**
+*Recovering the native secret: `Frida` rocks!*
 </div>
 
 
