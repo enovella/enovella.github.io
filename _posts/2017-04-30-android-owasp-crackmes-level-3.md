@@ -11,9 +11,7 @@ categories: [android, reverse]
 *"An Android crackme arose from hell. It doesn't make prisoners"*
 </div>
 
-This post details a way of solving the level 3 of the Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know a bit about binary disassemblers, decompilers, bytecode and crackmes before reading this post. Anyhow, you can go further with the reading although some steps might be omitted.
-
-
+This post details several ways of solving the level 3 of the Android crackmes released by the OWASP guys.
 
 **Before get started:**
 
@@ -59,7 +57,7 @@ Therefore, we need to extract two secrets to determine the right user input that
 
 **My Solution:**
 
-My final inclination was going for the binary instrumentation of the Android app at runtime. For that purpose, `Frida` was my choice. This tool is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX and on top of that it is being continuously improved. What else can we ask for? Let's use `Frida` then. Further info, either join the Telegram/IRC chat or read the docs at its website.
+My final inclination was going for the binary instrumentation of the Android app at runtime. For that purpose, `Frida` was my choice. This tool is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX and on top of that it is being continuously improved. What else can we ask for? Let's use `Frida` then.
 
 
 **Toolbox: Choose your guns!**
@@ -88,7 +86,7 @@ My selection of tools was as such; `Frida` for performing dynamic analysis, `Hex
 
 
 # Extracting the flag
-Let's walk through how we can extract both secrets and reverse-engineer and instrument the target application. Note that this needs to be reversed first and then instrumented at Java and native level. Thus, we first reverse and look at both sides before placing any hook. The structure of this post is split in four sections:
+Let's walk through how we can extract both secrets by reverse-engineering and instrumenting the target application. Note that this needs to be reversed first and then instrumented at the Java and native level. The structure of this post is split in four sections:
 
 * 1. Reverse-engineering Dalvik bytecode.
 * 2. Reverse-engineering native code.
