@@ -6,7 +6,7 @@ permalink: /about/
 
 I am security analyst at Riscure. Currently evaluating NFC mobile payments (HCE), content protection and embedded devices.
 
-email: ednolo [at] inf.upv.es 
+email: ednolo [at] inf.upv.es
 
 
 Drop me an email :)
