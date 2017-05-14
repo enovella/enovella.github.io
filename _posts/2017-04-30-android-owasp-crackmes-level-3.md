@@ -501,9 +501,9 @@ Java.perform(function () {
 
 ## 4. Instrumenting native code with `Frida`
 
-As seen in the reversing of native code, there were several libc functions, such as `strstr`, performing some checks for `Frida` and `Xposed`. Furthermore, the app was also creating threads to seamless check for debuggers or hooking frameworks being attached to the app. At this stage, we can plan our strategy on how to bypass these checks. A couple of ways came to my mind, either hook `strstr` or `pthread_create`. We will walk through in both cases and will show how to place your hooks to achieve the same no matter which hook you chose. Notice that in both cases, the app needs to be spawned due to the fact that `Frida` injects its agent within the memory of the app and then it gets de-attached. Therefore, anti-debugging checks are not a big issue.
+As seen in the reversing of native code part, there was several libc functions, such as `strstr`, performing some checks for `Frida` and `Xposed`. Furthermore, the app was also creating threads to seamless check for debuggers or hooking frameworks being attached to the app. At this stage, we can plan our strategy on how to bypass these checks. A couple of ways came to my mind, either hook `strstr` or `pthread_create`. We will walk through in both cases and will show how to place your hooks to achieve the same no matter which hook you chose. Notice that in both cases, the app needs to be spawned due to the fact that `Frida` injects its agent within the memory of the app and then it gets de-attached. Therefore, anti-debugging checks are not a big issue.
 
-**Hooking `strstr` and disabling the anti-frida checks**
+**Solution 1: Hooking `strstr` and disabling the anti-frida checks**
 
 Basically, we want to interfere the behavior of this line of decompiled code:
 ```c
@@ -514,7 +514,7 @@ if ( strstr(&s, "frida") || strstr(&s, "xposed") )
 }
 ```
 
-For hooking this libc function, we can write a native hook that checks if the strings passed to the function are either `Frida` or `Xposed` and returns null pointer as this string hadn't been found. In `Frida`, we can attach native hooks by using `Interceptor` as shown below: (Uncomment comments if you want to observe the behavior)
+For hooking this libc function, we can write a native hook that checks if the strings passed to the function are either `Frida` or `Xposed` and returns null pointer as if this string hadn't been found. In `Frida`, we can attach native hooks by using `Interceptor` as shown below: (Uncomment comments if you want to observe the behavior)
 ```java
 // char *strstr(const char *haystack, const char *needle);
 Interceptor.attach(Module.findExportByName("libc.so", "strstr"), {
@@ -574,10 +574,10 @@ pid: 7846
 [!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
 ```
 
-The `strstr` hook worked like a charm! We are now undetectable for the application and we can go further in our instrumentation phase. Do you smell what's the next hook? We will hook the function that does a kind of `strncmp` with xor.
+The `strstr` hook worked like a charm! We are now undetectable for the application and we can go further in our instrumentation phase. Do you smell what's the next hook? We will hook the function that does a kind of `strncmp` with xor later on.
 
 
-**Hooking `pthread_create` and disabling the security threads**
+**Solution 2: Replacing the native function `pthread_create` and disabling the security threads**
 
 It is important to notice that the two threads, we would like to avoid, have something in common, the first and third arguments are `0`:
 ```c
