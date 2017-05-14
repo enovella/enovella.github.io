@@ -352,15 +352,15 @@ An ELF binary contains a section called `.init_array` which holds the pointers t
 .fini_array:0000000000019CC0                   ; ==================================================
 ```
 
-`Radare2` also supports the identification of the JNI init methods since very recently. Thanks to `@pancake` and `@alvaro_fe` for their quick implementation on supporting the detection JNI entrypoints. If you are using `radare2`, just using the command `ie` will show you the entrypoints. More info about the commits in the references.
+`Radare2` also supports the identification of the JNI init methods since very recently. Thanks to `@pancake` and `@alvaro_fe` for their quick implementation on supporting the JNI entrypoints. If you are using `radare2`, just using the command `ie` will show you the entrypoints. More info about the commits in the references.
 
-Going to the function itself, we realize that the native library also calls to the function `monitor_frida_xposed` as well as clears memory to receive a value from the Java side. Before going further with the reverse engineering, we need to fix an IDA problem with JNI. IDA does not know that several functions are defined and called at the Java level but executed at the native level. For that reason, we need to fix the function prototype of all the Java callbacks starting with the package name `Java_sg_vantagepoint_uncrackable3_`.
+<!-- Going to the function itself, we realize that the native library also calls to the function `monitor_frida_xposed` as well as clears memory to receive a value from the Java side. Before going further with the reverse engineering, we need to fix an IDA problem with JNI. IDA does not know that several functions are defined and called at the Java level but executed at the native level. For that reason, we need to fix the function prototype of all the Java callbacks starting with the package name `Java_sg_vantagepoint_uncrackable3_`. -->
 
-Please notice that I have renamed several variables to progressively understand the code. The constructor `sub_73D0()` does the following things:
+The constructor `sub_73D0()` does the following things:
 
-* `pthread_create()` function creates a new thread executing the code of the function pointer `monitor_frida_xposed()`.
+* `pthread_create()` function creates a new thread executing the code of the function pointer `monitor_frida_xposed`.
 * `xorkey_native` memory is cleared before being initialized from the Java secret.
-* `codecheck` variable is a counter to determine integrity. Later on, it is checked before computing the native secret and xored with the `xorkey`.
+* `codecheck` variable is a counter to determine integrity. Later on, it is checked before computing the native secret.
 
 The decompiled code of `sub_73D0()` (renamed to `init`):
 ```c
@@ -382,7 +382,9 @@ int init()
 }
 ```
 
-Finally, the function `monitor_frida_xposed`  performs several security checks in order to avoid people instrumenting the application at the native level. If we take a peek at the following decompiled code, then we observe that several frameworks for dynamic binary instrumentation are checked:
+Finally, the function `monitor_frida_xposed`  performs several security checks in order to avoid people instrumenting the application. If we take a peek at the following decompiled code, then we observe that several frameworks for dynamic binary instrumentation are blacklisted. This check is done over and over in an infinite loop.
+
+The the function `monitor_frida_xposed` gets decompiled as follows:
 ```c
 void __fastcall __noreturn monitor_frida_xposed(int a1)
 {
