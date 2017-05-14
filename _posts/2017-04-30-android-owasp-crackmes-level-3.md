@@ -424,7 +424,7 @@ The Java (Dalvik) and native code are communicated through JNI calls. When the J
 
 It is important to mention that possibly `IDA Pro` does not detect the JNI callbacks as functions. For solving so, just go to the exports windows and make a procedure by pressing the key `P` on the export `Java_sg_vantagepoint_uncrackable3_MainActivity_init`. After that, you will also need to redefine the method signature by pressing the key `Y` when located at the function declaration of it. You can define the `JNIEnv*` objects to get better C-like code as the code shown below.
 
-The JNI call performs anti-debugging checks(`anti_debug()`), copies the `xorkey` into a global variable and increments the global counter `codecheck` to later on detect if the anti-debug checks were done fine.
+The JNI call starts executing the `anti_debug` function, then copies the `xorkey` into a global variable and also increments the global counter `codecheck` to later on detect if the anti-debug checks were done properly.
 
 The JNI call `Java_sg_vantagepoint_uncrackable3_MainActivity_init` gets decompiled as follows:
 ```c
@@ -476,7 +476,7 @@ int anti_debug()
 }
 ```
 
-The same author of this challenge has written an amazing post explaining how to perform self-debugging technique in order to avoid tampering with the native code. The `anti_debug` function exploits the fact that only one debugger can attach to a process at any one time. To investigate how this works deeper, please take a peek at the references. I will not re-explain the same here.
+The same author of this challenge has written an amazing post explaining how to perform the self-debugging technique. This exploits the fact that only one debugger can attach to a process at any one time. To investigate how this works deeper, please take a peek at the references cause I will not re-explain the same here.
 
 Effectively, if we run the application with a debugger attached to it then we can see two threads are launched and the application crashes.
 ```bash
