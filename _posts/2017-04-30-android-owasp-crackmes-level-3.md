@@ -61,13 +61,6 @@ Therefore, we need to extract two secrets to determine the right user input that
 
 My final inclination was going for the binary instrumentation of the Android app at runtime. For that purpose, `Frida` was my choice. This tool is a framework that injects JavaScript to explore native apps on Windows, macOS, Linux, iOS, Android, and QNX and on top of that it is being continuously improved. What else can we ask for? Let's use `Frida` then. Further info, either join the Telegram/IRC chat or read the docs at its website.
 
-That being said, let's walk through how we can extract both secrets and reverse-engineer and instrument the target application. Note that this needs to be reversed first and then instrumented at Java and native level. Thus, we first reverse and look at both sides before placing any hook. The structure of this post is split in four sections:
-
-* 1. Reverse-engineering Dalvik bytecode.
-* 2. Reverse-engineering native code.
-* 3. Instrumenting Dalvik bytecode with `Frida`.
-* 4. Instrumenting native code with `Frida`.
-
 
 **Toolbox: Choose your guns!**
 
@@ -93,6 +86,14 @@ The following list illustrates different tools that could be used with the same 
 
 My selection of tools was as such; `Frida` for performing dynamic analysis, `Hexrays` for native decompilation and `BytecodeViewer` (Procyon) for Java decompilation. The `Hexrays` decompiler was used because its reliable decompilation on ARM code. However, `Radare2` plus open-source decompilers can also do a great job.
 
+
+# Extracting the flag
+Let's walk through how we can extract both secrets and reverse-engineer and instrument the target application. Note that this needs to be reversed first and then instrumented at Java and native level. Thus, we first reverse and look at both sides before placing any hook. The structure of this post is split in four sections:
+
+* 1. Reverse-engineering Dalvik bytecode.
+* 2. Reverse-engineering native code.
+* 3. Instrumenting Dalvik bytecode with `Frida`.
+* 4. Instrumenting native code with `Frida`.
 
 ## 1. Reverse-engineering Dalvik bytecode
 
