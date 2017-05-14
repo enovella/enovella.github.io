@@ -724,7 +724,7 @@ bool __fastcall Java_sg_vantagepoint_uncrackable3_CodeCheck_bar(JNIEnv *env, job
 }
 ```
 
-In order to prepare our hook for ``strncmp_with_xor`, we need to obtain certain offsets within the disassemble as well as get the base address of the `libc` and after that re-calculate the final pointer at runtime. Attaching to a native pointer can be done by invoking `Interceptor`. Notice that the hook `p_protect_secret` is not needed to recover the secret.
+In order to prepare our hook for `strncmp_with_xor`, we need to obtain certain offsets within the disassemble as well as get the base address of the `libc` and after that re-calculate the final pointer at runtime. Attaching to a native pointer can be done by invoking `Interceptor`. Notice that the hook `p_protect_secret` is not needed to recover the secret.
 
 ```c
 var offset_anti_debug_x64   = 0x000075f0;
@@ -734,7 +734,7 @@ var offset_strncmp_xor64    = 0x000077ec;
 
 function do_native_hooks_libfoo(){
 
-    var p_foo = Module.findBaseAddress('libfoo.so');
+    var p_foo = Module.findBaseAddress("libfoo.so");
     if (!p_foo) {
         send("p_foo is null (libfoo.so). Returning now...");
         return 0;
@@ -786,6 +786,13 @@ function do_native_hooks_libfoo(){
 }
 ```
 
+This hook gives us the following output:
+<div style="text-align:center" markdown="1">
+![5](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/frida-rocks.png "Recovering native secret: Frida rocks!"){: .center-image }
+{:.image-caption}
+*Recovering native secret: `Frida` rocks!**
+</div>
+
 
 The following python script generates the user input required to pass the challenge:
 ```python
@@ -828,7 +835,7 @@ That's all folks! Please comment the way you solved the challenge as well as giv
 I had to rewrite the whole write-up after Bernhard Mueller and I detected problems with the compilation flags in the native library. This took me a while to rewrite but the challenge became way more attractive now. Just for your information, the two code snippets shown below are the decompilation of the main native function. Please note that all the static operations to hide the final value were optimized and removed by the compiler.
 
 
-** Version 1:**
+**Version 1:**
 
 The native secret was totally visible just by decompiling the native callback `Java_sg_vantagepoint_uncrackable3_CodeCheck_bar`:
 ```c
@@ -877,7 +884,7 @@ LABEL_8:
 }
 ```
 
-** Version 2:**
+**Version 2:**
 
 There was a function, which I renamed to `protect_secret`, that was performing a bunch of operations to thwart attackers from statically reverse engineer the code. However, in the prologue the native secret was leaked.
 ```c
