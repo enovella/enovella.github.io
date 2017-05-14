@@ -786,7 +786,7 @@ function do_native_hooks_libfoo(){
 }
 ```
 
-This hook gives us the following output:
+This hook gives us the following output when entering the user input `012345678901234567890123`. Can you spot the native secret?
 <div style="text-align:center" markdown="1">
 ![5](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/frida-rocks.png "Recovering the native secret: Frida rocks!"){: .center-image }
 {:.image-caption}
