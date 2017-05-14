@@ -514,7 +514,7 @@ if ( strstr(&s, "frida") || strstr(&s, "xposed") )
 }
 ```
 
-For hooking this libc function, we can write a `Frida` hooks as such: (Uncomment comments if you want to observe the behavior)
+For hooking this libc function, we can write a native hook that checks if the strings passed to the function are either `Frida` or `Xposed` and returns null pointer as this string hadn't been found. In `Frida`, we can attach native hooks by using `Interceptor` as shown below: (Uncomment comments if you want to observe the behavior)
 ```java
 // char *strstr(const char *haystack, const char *needle);
 Interceptor.attach(Module.findExportByName("libc.so", "strstr"), {
@@ -574,11 +574,12 @@ pid: 7846
 [!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
 ```
 
-The `strstr` hook worked like a charm! We are now undetectable for the application.
+The `strstr` hook worked like a charm! We are now undetectable for the application and we can go further in our instrumentation phase. Do you smell what's the next hook? We will hook the function that does a kind of `strncmp` with xor.
+
 
 **Hooking `pthread_create` and disabling the security threads**
 
-The two threads we will like to avoid have something in common, the first and third arguments are `0`:
+It is important to notice that the two threads, we would like to avoid, have something in common, the first and third arguments are `0`:
 ```c
 pthread_create(&newthread, 0, (void *(*)(void *))monitor_pid, 0);
 pthread_create(&newthread, 0, (void *(*)(void *))monitor_frida_xposed, 0);
@@ -591,6 +592,12 @@ If we look at the cross-references to `pthread_create`, then we realize that all
 *Cross-references to `pthread_create`. These xrefs lead to anti-debugging and -instrumentation functions.*
 </div>
 
+The strategy here is as follows:
+* Obtain the native pointer from the `libc` function: `pthread_create`.
+* Create a native function with this pointer.
+* Define a native callback and overload this method.
+* Use `Interceptor` with the `replace` mode to inject the replacement.
+* If we detect that `pthread_create` wants to detect us, then we will fake the callback and will always return `0` simulating that `Frida` wasn't in the memory space of the process.
 
 
 The following piece of code is a replacement for the native function `pthread_create`.
@@ -645,7 +652,41 @@ pid: 11075
 [!] Received: [ret: 0]
 ```
 
-**The secret:**
+If you want to hook all the calls to `pthread_create`, you can start using this hook and observe the behavior:
+```java
+// int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
+var p_pthread_create = Module.findExportByName("libc.so","pthread_create");
+Interceptor.attach(ptr(p_pthread_create), {
+    onEnter: function (args) {
+        this.thread        = args[0];
+        this.attr          = args[1];
+        this.start_routine = args[2];
+        this.arg           = args[3];
+        this.fakeRet       = Boolean(0);
+        send("onEnter() pthread_create(" + this.thread.toString() + ", " + this.attr.toString() + ", "
+            + this.start_routine.toString() + ", " + this.arg.toString() + ");");
+
+        if (parseInt(this.attr) == 0 && parseInt(this.arg) == 0)
+            this.fakeRet = Boolean(1);
+
+    },
+    onLeave: function (retval) {
+        send(retval);
+        send("onLeave() pthread_create");
+        if (this.fakeRet == 1) {
+            var fakeRet = ptr(0);
+            send("pthread_create real ret: " + retval);
+            send("pthread_create fake ret: " + fakeRet);
+            return fakeRet;
+        }
+        return retval;
+    }
+});
+```
+
+**Hooking the secret:**
+
+
 
 The following python script generates the user input required to pass the challenge:
 ```python
