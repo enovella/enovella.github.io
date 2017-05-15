@@ -15,7 +15,7 @@ This post details several ways of solving the level 3 of the Android crackmes re
 
 **Security mechanisms in UnCrackable Level3:**
 
-Anti-hacking techniques were implemented in the APK, principally to slow down reversers. Take a seat because now because we will have to deal with all of them.
+Anti-hacking techniques were implemented in the APK, principally to slow down reversers. Take a seat because now we will have to deal with all of them.
 
 We have detected the following protections on the mobile application:
 - Java anti-debugging
@@ -24,11 +24,11 @@ We have detected the following protections on the mobile application:
 - Native anti-DBI
 - Native anti-debugging
 - Native integrity checks of the Dalvik bytecode
+- Native obfuscation (only a bit of symbol stripping and the function protecting the secret)
 
 The following security mechanisms were not found in the application though:
 - Java anti-DBI
 - Java obfuscation
-- Native obfuscation (only a bit of symbol stripping)
 - Native root checks
 - Native integrity checks of the native code itself
 
@@ -47,7 +47,7 @@ To begin with, consider the remarks below before analyzing the APK:
 
 This challenge could be solved in many ways. First of all we need to know what the application does underneath. The app performs a verification of the user input against a secret hidden within the application. Basically, by verifying the user input against a Java and native secret xored with each other. The verification is done at the native level after sending the Java secret data through the JNI bridge to the native library. Actually, the verification is a simple `strncmp` with the user input and the `xor` operation of the secrets. The pseudo-code of the verification is as follows: (names are given by me)
 ```c
-strncmp_with_xor(user_input_native, native_secret, java_xorkey) == 24;
+strncmp_with_xor(user_input_native, native_secret, java_secret) == 24;
 ```
 
 Therefore, we need to extract the two secrets to determine the right user input that display the message of success. The Java secret can be recovered very straightforward just by decompiling the APK. However, the native secret cannot be easily recovered and thus statically reverse engineering the code does not seem to be a smart idea. Some kind of hooking or symbolic execution would be a way clever idea instead of going for pure static reverse engineering. For extracting such secrets, my initial thoughts were performing:
@@ -579,7 +579,7 @@ The `strstr` hook worked like a charm! We are now undetectable for the applicati
 
 **Solution 2: Replacing the native function `pthread_create` and disabling the security threads**
 
-It is important to notice that the two threads, we would like to avoid, have something in common, the first and third arguments are `0`:
+It is important to notice that the two threads, we would like to avoid, have something in common. Looking at them, we observe that the first and third arguments are `0` as shown below:
 ```c
 pthread_create(&newthread, 0, (void *(*)(void *))monitor_pid, 0);
 pthread_create(&newthread, 0, (void *(*)(void *))monitor_frida_xposed, 0);
@@ -625,7 +625,7 @@ Interceptor.replace( p_pthread_create, new NativeCallback(function (ptr0, ptr1, 
 
 ```
 
-Let's run our hook and see what's going on. Note that two native calls to `pthread_create` were hooked and thus we bypassed the security checks. Also notice that we want to avoid the calls when first and third arguments are set to zero and leave working others normal threads in the application.
+Let's run our hook and see what's going on. Note that two native calls to `pthread_create` were hooked and thus we bypassed the security checks (`init` and `anti_debug` functions). Also notice that we want to avoid the calls when first and third arguments are set to `0` and leave working others normal threads in the application.
 ```bash
 [20:07 edu@ubuntu hooks] > python run_usb_spawn.py
 pid: 11075
@@ -652,7 +652,7 @@ pid: 11075
 [!] Received: [ret: 0]
 ```
 
-Optionally, if you want to play more with `Frida` then you will want to hook all the calls to `pthread_create`. For doing so, you can start using this hook and observe the behavior. Feel free to use this hook:
+Optionally, if you want to play more with `Frida` then you may first want to hook the calls to `pthread_create` and observe the behavior. For doing so, you can start using this hook:
 ```java
 // int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
 var p_pthread_create = Module.findExportByName("libc.so","pthread_create");
