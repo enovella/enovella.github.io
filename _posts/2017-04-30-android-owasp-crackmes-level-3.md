@@ -514,7 +514,7 @@ if ( strstr(&s, "frida") || strstr(&s, "xposed") )
 }
 ```
 
-For hooking this libc function, we can write a native hook that checks if the strings passed to the function are either `Frida` or `Xposed` and returns null pointer as if this string hadn't been found. In `Frida`, we can attach native hooks by using `Interceptor` as shown below: (Uncomment comments if you want to observe the behavior)
+For hooking this libc function, we can write a native hook that checks if the strings passed to the function are either `Frida` or `Xposed` and returns null pointer as if this string hadn't been found. In `Frida`, we can attach native hooks by using `Interceptor` as shown below: (Uncomment comments in the final hook code if you want to observe the entire behavior)
 ```java
 // char *strstr(const char *haystack, const char *needle);
 Interceptor.attach(Module.findExportByName("libc.so", "strstr"), {
@@ -528,10 +528,7 @@ Interceptor.attach(Module.findExportByName("libc.so", "strstr"), {
         haystack = Memory.readUtf8String(this.haystack);
         needle   = Memory.readUtf8String(this.needle);
 
-        //send("onEnter() strstr(\"" + haystack + "\",\"" + needle + "\");");
         if ( haystack.indexOf("frida") != -1 || haystack.indexOf("xposed") != -1 ) {
-            //send("onEnter() strstr(\"" + haystack + "\",\"" + needle + "\");");
-            //send("onEnter() Frida/Xposed hooked!");
             this.frida = Boolean(1);
         }
     },
@@ -539,14 +536,10 @@ Interceptor.attach(Module.findExportByName("libc.so", "strstr"), {
     onLeave: function (retval) {
 
         if (this.frida) {
-            var fakeRet = ptr(0);
-            //send("onLeave() Frida real retval = " + retval );
-            //send("onLeave() Frida fake retval = " + fakeRet );
             //send("strstr(frida) was patched!! :) " + haystack);
             retval.replace(0);
         }
 
-        //send("onLeave() strstr ret: " + retval);
         return retval;
     }
 });
