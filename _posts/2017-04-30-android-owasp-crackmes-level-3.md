@@ -513,9 +513,9 @@ u0_a92    7614  7593  1585956 37604 ptrace_sto 7f99b37e3c t sg.vantagepoint.uncr
 
 ## 3. Instrumenting Dalvik bytecode with `Frida`
 
-At this moment, we need to hide that our phone is rooted. The normal way of bypassing these checks with `Frida` would be writing hooks for those functions. An issue came up when placing my hooks on the method `onCreate()` of the MainActivity, this was that `Frida` was not intercepting at the right moment. Further info can be found at [frida-Java issue #29](https://github.com/frida/frida-java/issues/29).
+At this moment, we need to hide that our phone is rooted. The normal way of bypassing these checks with `Frida` would have been writing hooks for such functions. Though, an issue came up when placing my hooks on the method `onCreate()` of the MainActivity. Basically, `Frida` was not capable of intercepting the method `onCreate()` at the right moment. Further info can be found at [frida-Java issue #29](https://github.com/frida/frida-java/issues/29).
 
-However, we can think of different manner to bypass these checks. What about if we take over the control of the system call `exit()`? This way allows us to forget all the Java security mechanisms and continue interacting with the application. For that purpose, the following hook can work:
+However, we can think of different manners to bypass these checks. What about if we take over the control of the system call `exit()`? Doing so, it would allow us to do not spend time bypassing the Java security mechanisms and after hooking the method `exit`, we could continue interacting with the application as if no checks had been. For that purpose, the following hook can work:
 
 ```java
 Java.perform(function () {
@@ -529,6 +529,7 @@ Java.perform(function () {
     send("Done Java hooks installed.");
 });
 ```
+
 Once we place this hook and spawn the application, we are ready to enter the user input. However, the native checks also need to be bypassed.
 
 
