@@ -535,7 +535,7 @@ Once we place this hook and spawn the application, we are ready to enter the use
 
 ## 4. Instrumenting native code with `Frida`
 
-As seen in the reversing of native code part, there was several libc functions, such as `strstr`, performing some checks for `Frida` and `Xposed`. Furthermore, the app was also creating threads to seamless check for debuggers or hooking frameworks being attached to the app. At this stage, we can plan our strategy on how to bypass these checks. A couple of ways came to my mind, either hook `strstr` or `pthread_create`. We will walk through in both cases and will show how to place your hooks to achieve the same no matter which hook you chose. Notice that in both cases, the app needs to be spawned due to the fact that `Frida` injects its agent within the memory of the app and then it gets de-attached. Therefore, anti-debugging checks are not a big issue.
+As seen in the reversing of native code part, there were several libc functions (e.g. `strstr`) performing some checks for `Frida` and `Xposed`. Furthermore, the app was also creating threads to seamless check for debuggers or DBI frameworks being attached to the app. At this stage, we can plan our strategy on how to bypass these checks. A couple of ways came to my mind, either hook `strstr` or `pthread_create`. We will walk through in both cases and will show how to place your hooks to achieve the same no matter which hook you choose. Notice that in both cases, the app needs to be spawned due to the fact that `Frida` injects its agent within the address space of the app and then it gets de-attached. Therefore, anti-debugging checks are not a big issue.
 
 **Solution 1: Hooking `strstr` and disabling the anti-frida checks**
 
@@ -548,7 +548,7 @@ if ( strstr(&s, "frida") || strstr(&s, "xposed") )
 }
 ```
 
-For hooking this libc function, we can write a native hook that checks if the strings passed to the function are either `Frida` or `Xposed` and returns null pointer as if this string hadn't been found. In `Frida`, we can attach native hooks by using `Interceptor` as shown below: (Uncomment comments in the final hook code if you want to observe the entire behavior)
+For hooking this `libc` function, we can write a native hook that checks if the string passed to the function is either `Frida` or `Xposed` and returns null pointer as if this string hadn't been found. In `Frida`, we can attach native hooks by using `Interceptor` as shown below: (Uncomment comments in the [final hook code](https://github.com/enovella/androidtrainings/tree/master/owasp-crackmes) if you want to observe the entire behavior)
 ```java
 // char *strstr(const char *haystack, const char *needle);
 Interceptor.attach(Module.findExportByName("libc.so", "strstr"), {
@@ -601,16 +601,10 @@ pid: 7846
 [!] Received: [strstr(frida) was patched!! 77e5d48000-77e6cfb000 r-xp 00000000 fd:00 752205    /data/local/tmp/re.frida.server/frida-agent-64.so]
 ```
 
-The `strstr` hook worked like a charm! We are now undetectable for the application and we can go further in our instrumentation phase. Do you smell what's the next hook? We will hook the function that does a kind of `strncmp` with xor later on.
+The `strstr` hook worked like a charm! We are now undetectable for the application and we can go further in our instrumentation phase. Do you smell what's the next hook? Later on, we will hook the function that performs the verification by making use of a kind of  `strncmp` with xor.
 
 
 **Solution 2: Replacing the native function `pthread_create` and disabling the security threads**
-
-It is important to notice that the two threads, we would like to avoid, have something in common. Looking at them, we observe that the first and third arguments are `0` as shown below:
-```c
-pthread_create(&newthread, 0, (void *(*)(void *))monitor_pid, 0);
-pthread_create(&newthread, 0, (void *(*)(void *))monitor_frida_xposed, 0);
-```
 
 If we look at the cross-references to `pthread_create`, then we realize that all the references are the callbacks we want to influence. See more in the next figure:
 <div style="text-align:center" markdown="1">
@@ -619,12 +613,18 @@ If we look at the cross-references to `pthread_create`, then we realize that all
 *Cross-references to `pthread_create`. These xrefs lead to anti-debugging and -instrumentation functions.*
 </div>
 
-The strategy here is as follows:
+It is important to notice that the two threads have something in common. Looking at them, we observe that the first and third arguments are `0` as shown below:
+```c
+pthread_create(&newthread, 0, (void *(*)(void *))monitor_pid, 0);
+pthread_create(&newthread, 0, (void *(*)(void *))monitor_frida_xposed, 0);
+```
+
+In order to avoid these threads, the strategy is as follows:
 * Obtain the native pointer from the `libc` function: `pthread_create`.
 * Create a native function with this pointer.
 * Define a native callback and overload this method.
 * Use `Interceptor` with the `replace` mode to inject the replacement.
-* If we detect that `pthread_create` wants to detect us, then we will fake the callback and will always return `0` simulating that `Frida` wasn't in the memory space of the process.
+* If we detect that `pthread_create` wants to detect us, then we will fake the callback and will always return `0` simulating that `Frida` wasn't in the address space of the process.
 
 
 The following piece of code is a replacement for the native function `pthread_create`.
@@ -679,7 +679,7 @@ pid: 11075
 [!] Received: [ret: 0]
 ```
 
-Optionally, if you want to play more with `Frida` then you may first want to hook the calls to `pthread_create` and observe the behavior. For doing so, you can start using this hook:
+Optionally, if you want to play more with `Frida` then you might first want to hook the calls to `pthread_create` and observe the behavior. For doing so, you can start using this hook:
 ```java
 // int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
 var p_pthread_create = Module.findExportByName("libc.so","pthread_create");
@@ -713,8 +713,7 @@ Interceptor.attach(ptr(p_pthread_create), {
 
 **Hooking the secret:**
 
-Once arrived here, we are almost ready to go. The next native hook will consist in intercepting the arguments that are compared with the user input. In the following C-like code, we have renamed a function with the name `protect_secret` that generates the secret after a bunch of operations (you will not be happy reversing this mess!) and also the function `strncmp_with_xor`. This contains the secret to be compared with the user input. What about if we hook the parameters entering to this function?
-
+Once arrived here, we are almost ready to go. The next native hook will consist in intercepting the arguments that are compared with the user input. In the following C-like code, we have renamed a function with the name `protect_secret`. This function generates the secret after a bunch of obfuscated operations. Once generated this secret, it compared with the user input in the function `strncmp_with_xor`. What about if we hook the parameters entering to this function?
 
 The verification code gets decompiled as follows: (names are given by my interpretation)
 ```c
@@ -751,11 +750,10 @@ bool __fastcall Java_sg_vantagepoint_uncrackable3_CodeCheck_bar(JNIEnv *env, job
 }
 ```
 
-In order to prepare our hook for `strncmp_with_xor`, we need to obtain certain offsets within the disassemble as well as get the base address of the `libc` and after that re-calculate the final pointer at runtime. Attaching to a native pointer can be done by invoking `Interceptor`. Notice that the hook `p_protect_secret` is not needed to recover the secret.
+In order to prepare our hook for `strncmp_with_xor`, we need to obtain certain offsets in the disassemble as well as get the base address of the `libc` and eventually re-calculate the final pointer at runtime. Attaching to a native pointer can be done by invoking `Interceptor`. Notice that the hook using the native pointer `p_protect_secret` is not needed to recover the secret. Thus, you can skip it in your script .
 
 ```c
 var offset_anti_debug_x64   = 0x000075f0;
-var offset_anti_debug_x32   = 0x00005e90;
 var offset_protect_secret64 = 0x0000779c;
 var offset_strncmp_xor64    = 0x000077ec;
 
@@ -850,22 +848,22 @@ The source code of all the hooks can be found at my GitHub page in the `androidt
 
 **Conclusions:**
 * None application is `UnCrackable` (or 100% secure).
-* `Frida` rocks! We overcame pretty much all the countermeasures on our way in order to obtain the valid secret. Anti-frida techniques were bypassed by hooking with `Frida`. This allowed us to bypass the security checks in different manners and also to debug the application at runtime. Just a comment, but the author of `Frida` sometimes says that he sometimes fixes `Frida` by instrumenting it with `Frida`. This is so cool!
+* `Frida` rocks! We overcame pretty much all the countermeasures on our way in order to obtain the valid secret. Anti-frida libc-based techniques were bypassed by hooking with `Frida`. This allowed us to bypass the security checks in different manners and also to debug the application at runtime. Just a comment, but the author of `Frida` [@oleavr](https://twitter.com/oleavr) says that sometimes fixes `Frida` by instrumenting it with `Frida`. This is so amazing!
 * Initial reverse-engineering was required before placing `Frida` hooks.
 * Unlike the Dalvik code, native code can be more tough to deal with.
 * Native compilers can optimize too much and therefore introduce unintended bugs or behaviors.
-* Thanks a lot for the challenge Bernhard Mueller! It was so much fun to solve it. Can we expect UnCrackable Level4 to be fully anti-`Frida`? Looking forward to it!
+* Bernhard Mueller: Thanks a lot for the challenge! It was so much fun to solve it. Can we expect UnCrackable Level4 to be fully anti-`Frida`? Looking forward to it!
 
 That's all folks! Please comment the way you solved the challenge as well as give me any feedback by posting some comments on the blog. See you around!
 
 # Extra: Compiler optimizations.
 
-I had to rewrite the whole write-up after Bernhard Mueller and I detected problems with the compilation flags in the native library. This took me a while to rewrite but the challenge became way more attractive now. Just for your information, the two code snippets shown below are the decompilation of the main native function. Please note that all the static operations to hide the final value were optimized and removed by the compiler.
+I had to rewrite the whole write-up after Bernhard Mueller and I detected some problems with the compilation flags in the native library. Just for your information, the two code snippets shown below are the decompilation of the main native function. Please note that all the static operations to hide the final value were optimized and removed by the compiler.
 
 
 **Version 1:**
 
-The native secret was totally visible just by decompiling the native callback `Java_sg_vantagepoint_uncrackable3_CodeCheck_bar`:
+The native secret was totally visible just by decompiling the native JNI callback `Java_sg_vantagepoint_uncrackable3_CodeCheck_bar`:
 ```c
 signed int __fastcall Java_sg_vantagepoint_uncrackable3_CodeCheck_bar(JNIEnv *jni, jobject self, char* user_input)
 {
@@ -914,7 +912,7 @@ LABEL_8:
 
 **Version 2:**
 
-There was a function, which I renamed to `protect_secret`, that was performing a bunch of operations to thwart attackers from statically reverse engineer the code. However, in the prologue the native secret was leaked.
+There was a function, which I renamed to `protect_secret`, that was performing a bunch of obfuscated operations to thwart attackers from statically reverse engineer the code. However, in the prologue the native secret was fully leaked.
 ```c
 _DWORD *__fastcall protect_secret(_DWORD *secret)
 {
