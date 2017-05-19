@@ -358,13 +358,13 @@ An ELF binary contains a section called `.init_array` which holds the pointers t
 .fini_array:0000000000019CC0                   ; ==================================================
 ```
 
-`Radare2` also supports the identification of the JNI init methods since very recently. Thanks to `@pancake` and `@alvaro_fe` for their quick implementation when  supporting the JNI entrypoints in `radare2`. If you are using `radare2`, just using the command `ie` will show you the entrypoints. More info about the commits in the references.
+`Radare2` also supports the identification of the JNI init methods since very recently. Thanks to `@pancake` and `@alvaro_fe` for their quick implementation  supporting the JNI entrypoints in `radare2`. If you are using `radare2`, just using the command `ie` will show you the entrypoints. More info about the commits in the references.
 
 The constructor `sub_73D0()` does the following things:
 
-* `pthread_create()` function creates a new thread executing the code of the function pointer `monitor_frida_xposed`.
+* `pthread_create()` function creates a new thread executing the code of the function pointer `monitor_frida_xposed`. This function has been renamed with this name because both `Frida` and `Xposed` frameworks are seamless checked in order to avoid hooking.
 * `xorkey_native` memory is cleared before being initialized from the Java secret.
-* `codecheck` variable is a counter to determine integrity. Later on, it is checked before computing the native secret.
+* `codecheck` variable is a counter to determine integrity. Later on, it is checked before computing the native secret. Thus, we need to pass this function to have the right value of `codecheck` in the final verification.
 
 The decompiled code of `sub_73D0()` (renamed to `init`):
 ```c
@@ -388,7 +388,7 @@ int init()
 
 **Native anti-hooking checks:**
 
-The function `monitor_frida_xposed` performs several security checks in order to avoid people instrumenting the application. If we take a peek at the following decompiled code, then we observe that several frameworks for dynamic binary instrumentation are blacklisted. This check is done over and over in an infinite loop and if any DBI framework is detected, then `goodbye()` function is called and the app crashes.
+The function `monitor_frida_xposed` performs several security checks in order to avoid people instrumenting the application. If we take a peek at the following decompiled code, then we observe that several DBI frameworks are blacklisted. This check is done over and over in an infinite loop and if any DBI framework is detected, then `goodbye()` function is called and the app crashes.
 
 The function `monitor_frida_xposed` gets decompiled as follows:
 ```c
@@ -418,7 +418,7 @@ void __fastcall __noreturn monitor_frida_xposed(int a1)
 }
 ```
 
-An example of a tamper detection is shown below where the application aborts and exists with signal `SIGABRT`(6):
+An example of a tamper detection is shown below where the application aborts with signal `SIGABRT`(6):
 ```bash
 ActivityManager: Start proc 7098:sg.vantagepoint.uncrackable3/u0a92 for activity sg.vantagepoint.uncrackable3/.MainActivity
 UnCrackable3: Tampering detected! Terminating...
@@ -450,7 +450,7 @@ On the DBI section, we will walk you through on how to bypass these checks by in
 
 **Native anti-debugging checks:**
 
-The JNI call `Java_sg_vantagepoint_uncrackable3_MainActivity_init` starts executing the `anti_debug` function, then copies the `xorkey` into a global variable and also increments the global counter `codecheck` to later on detect if the anti-debug checks were done properly.
+The JNI call `Java_sg_vantagepoint_uncrackable3_MainActivity_init` starts executing the `anti_debug` function, then copies the `xorkey` into a global variable and also increments the global counter `codecheck` to later on detect if the anti-debug checks were done properly. This variable needs to have the value of `2` at the moment of the verification because this would mean that the anti-DBI and -debugging checks were properly completed without errors.
 
 This JNI call gets decompiled as follows:
 ```c
@@ -513,6 +513,10 @@ u0_a92    7614  7593  1585956 37604 ptrace_sto 7f99b37e3c t sg.vantagepoint.uncr
 
 ## 3. Instrumenting Dalvik bytecode with `Frida`
 
+At this moment, we need to hide that our phone is rooted. The normal way of bypassing these checks with `Frida` would be writing hooks for those functions. An issue came up when placing my hooks on the method `onCreate()` of the MainActivity, this was that `Frida` was not intercepting at the right moment. Further info can be found at [frida-Java issue #29](https://github.com/frida/frida-java/issues/29).
+
+However, we can think of different manner to bypass these checks. What about if we take over the control of the system call `exit()`? This way allows us to forget all the Java security mechanisms and continue interacting with the application. For that purpose, the following hook can work:
+
 ```java
 Java.perform(function () {
     send("Placing Java hooks...");
@@ -525,6 +529,8 @@ Java.perform(function () {
     send("Done Java hooks installed.");
 });
 ```
+Once we place this hook and spawn the application, we are ready to enter the user input. However, the native checks also need to be bypassed.
+
 
 ## 4. Instrumenting native code with `Frida`
 
