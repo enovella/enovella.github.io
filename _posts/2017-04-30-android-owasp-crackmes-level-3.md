@@ -96,7 +96,7 @@ Let's walk through how we can extract both secrets by reverse-engineering and in
 * Instrumenting Dalvik bytecode with `Frida`.
 * Instrumenting native code with `Frida`.
 
-## 1. Reverse-engineering Dalvik bytecode
+## 1. Reverse-engineering Dalvik bytecode (`classes.dex`)
 
 First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
@@ -335,9 +335,9 @@ public class RootDetection {
 }
 ```
 
-## 2. Reverse-engineering native code
+## 2. Reverse-engineering native code (`libfoo.so`)
 
-The Java (Dalvik) and native code are communicated through JNI calls. When the Java code is started, this loads the native code and initializes it with a bunch of bytes containing the Java secret. The native code is not obfuscated although it was slightly stripped and not statically compiled. Therefore, we still have symbols in the binary.
+The Java (Dalvik) and native code are communicated through JNI calls. When the Java code is started, this loads the native code and initializes it with a bunch of bytes containing the Java secret. The native code is not obfuscated excepting the function protecting the secret. Also, it was slightly stripped and not statically compiled. Therefore, we still have many symbols in the binary.
 
 It is important to mention that possibly `IDA Pro` does not detect the JNI callbacks as functions. For solving so, just go to the exports windows and make a procedure by pressing the key `P` on the export `Java_sg_vantagepoint_uncrackable3_MainActivity_*`. After that, you will also need to redefine the method signature by pressing the key `Y` when located at the function declaration of it. You can define the `JNIEnv*` objects to get better decompilation as the C-like code shown in this section.
 
