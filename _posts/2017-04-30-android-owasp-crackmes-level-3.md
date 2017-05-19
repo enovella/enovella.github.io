@@ -52,9 +52,9 @@ strncmp_with_xor(user_input_native, native_secret, java_secret) == 24;
 
 Therefore, we need to extract the two secrets to determine the right user input that displays the message of success. The Java secret can be recovered very straightforward just by decompiling the APK. However, the native secret cannot be easily recovered and just statically reverse engineering the code can be rather tedious and time-consuming. The native function conceals the secret by obfuscation which makes tough a pure static reverse engineering approach. However, hooking or symbolic execution might be a way clever idea. For extracting such secrets, my initial thoughts were performing:
 
+* static reverse engineering plus dynamic analysis by using `Frida`.
 * static reverse engineering of the Dalvik and native code plus code emulation with `Unicorn`.
 * static reverse engineering of the Dalvik and native code plus symbolic execution by using `angr`.
-* static reverse engineering plus dynamic analysis by using `Frida`.
 * patching Smali code (Dalvik) and native code to NOP out all the security checks by using `Radare2`.
 
 
@@ -109,11 +109,11 @@ First of all, several files need to be unpacked from the APK to be reverse engin
 *APK packages overview. Source code decompiled from the Dalvik bytecode (`classes.dex`)*
 </div>
 
-The code snippet shown below was obtained by decompiling the main class of the UnCrackable app Level3. This has the interesting points to discuss:
+The code snippet of the `MainActivity` shown below was obtained by decompiling the main class of the UnCrackable app Level3. This has the interesting points to discuss:
 
 * a hardcoded key in the code (`String xorkey = "pizzapizzapizzapizzapizz"`).
 * The loading of the native library `libfoo.so` and declaration of two native methods: `init()` and `baz()`, which will be invoked through JNI calls. Notice that one  method is initialized with the xorkey.
-* Variables and class fields to keep track if tampering has been detected at runtime.
+* Variables and class fields to keep track if any tampering has been detected at runtime.
 
 
 The main activity gets decompiled as follows:
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
 ```
 
 
-Furthermore, when the application is launched, the method `onCreate()` of the main activity gets executed. This method does the following at the Java level:
+When the application is launched, the method `onCreate()` of the main activity gets executed. This method does the following at the Java level:
 
 * Verifies the integrity of the native libraries by calculating the CRC checksum. Note that none cryptography is used to sign the native libraries.
 * Initializes the native library and sends the Java secret (`"pizzapizzapizzapizzapizz"`) towards the native code through JNI calls.
@@ -188,11 +188,11 @@ protected void onCreate(Bundle savedInstanceState) {
     this.setContentView(0x7F04001B);
 }
 ```
-
+Once observed the main flow of the application, let's describe some of the security mechanisms found.
 
 **Integrity checks:**
 
-As already mentioned above, integrity checks for native libraries and Dalvik bytecode are identified in the function `verifyLibs`. Notice that repackaging the Dalvik bytecode and native code may be still feasible. Just by patching out the function `verifyLibs` in the Dalvik bytecode and the function `baz` in the native library, an attacker could bypass all the integrity checks and thus continue attacking the mobile app at will. 
+As already mentioned above, integrity checks are identified in the function `verifyLibs` for protecting both the native libraries and Dalvik bytecode. Notice that repackaging the Dalvik bytecode and native code may be still feasible due to the weak CRC checksum used. Just by patching out the function `verifyLibs` in the Dalvik bytecode and the function `baz` in the native library, an attacker could bypass all the integrity checks and then continue tampering with the mobile app at will.
 
 The function responsible for verifying libraries gets decompiled as follows:
 ```java
@@ -234,7 +234,7 @@ private void verifyLibs() {
 }
 ```
 
-On top of these integrity checks, we also observe the class `IntegrityCheck` also verifies that the application has not been tampered with and thus does not contain the debuggable flag. This class gets decompiled as follows:
+On top of these integrity checks, we also observe that the class `IntegrityCheck` also verifies that the application has not been tampered with and thus does not contain the debuggable flag. This class gets decompiled as follows:
 
 ```java
 package sg.vantagepoint.util;
