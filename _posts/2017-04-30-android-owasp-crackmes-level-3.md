@@ -418,6 +418,35 @@ void __fastcall __noreturn monitor_frida_xposed(int a1)
 }
 ```
 
+An example of a tamper detection is shown below where the application aborts and exists with signal `SIGABRT`(6):
+```bash
+05-03 23:37:32.815   899  7087 W ActivityManager: Ignoring remove of inactive process: ProcessRecord{fdbdd 0:sg.vantagepoint.uncrackable3/u0a92}
+05-03 23:37:32.816   899  7087 I ActivityManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=sg.vantagepoint.uncrackable3/.MainActivity (has extras)} from uid 10042 on display 0
+05-03 23:37:32.860   899  4032 I ActivityManager: Start proc 7098:sg.vantagepoint.uncrackable3/u0a92 for activity sg.vantagepoint.uncrackable3/.MainActivity
+05-03 23:37:32.914  7098  7112 V UnCrackable3: Tampering detected! Terminating...
+05-03 23:37:32.915  7098  7112 F libc    : Fatal signal 6 (SIGABRT), code -6 in tid 7112 (nt.uncrackable3)
+05-03 23:37:32.916   346   346 W         : debuggerd: handling request: pid=7098 uid=10092 gid=10092 tid=7112
+05-03 23:37:32.984  7113  7113 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+05-03 23:37:32.985  7113  7113 F DEBUG   : Build fingerprint: 'google/bullhead/bullhead:7.1.1/N4F26O/3582057:user/release-keys'
+05-03 23:37:32.985  7113  7113 F DEBUG   : Revision: 'rev_1.0'
+05-03 23:37:32.985  7113  7113 F DEBUG   : ABI: 'arm64'
+05-03 23:37:32.985  7113  7113 F DEBUG   : pid: 7098, tid: 7112, name: nt.uncrackable3  >>> sg.vantagepoint.uncrackable3 <<<
+05-03 23:37:32.985  7113  7113 F DEBUG   : signal 6 (SIGABRT), code -6 (SI_TKILL), fault addr --------
+05-03 23:37:32.985  7113  7113 F DEBUG   :     x0   0000000000000000  x1   0000000000001bc8  x2   0000000000000006  x3   0000000000000003
+05-03 23:37:32.985  7113  7113 F DEBUG   :     x4   0000000000000000  x5   0000000000000000  x6   00000074378cc000  x7   0000000000000000
+05-03 23:37:32.985  7113  7113 F DEBUG   :     x8   0000000000000083  x9   0000000000000031  x10  00000074323d5c20  x11  0000000000000023
+05-03 23:37:32.985  7113  7113 F DEBUG   :     x12  0000000000000018  x13  0000000000000000  x14  0000000000000000  x15  003687eda0f93200
+05-03 23:37:32.985  7113  7113 F DEBUG   :     x16  0000007436453ee0  x17  00000074363fdb24  x18  000000006ff29a18  x19  00000074323d64f8
+05-03 23:37:32.985  7113  7113 F DEBUG   :     x20  0000000000000006  x21  00000074323d6450  x22  0000000000000000  x23  e9e946d86ea1f14f
+05-03 23:37:32.985  7113  7113 F DEBUG   :     x24  00000074323d64d0  x25  00000000000fd000  x26  e9e946d86ea1f14f  x27  00000074323de2f8
+05-03 23:37:32.985  7113  7113 F DEBUG   :     x28  0000000000000000  x29  00000074323d6140  x30  00000074363faf50
+05-03 23:37:32.985  7113  7113 F DEBUG   :     sp   00000074323d6120  pc   00000074363fdb2c  pstate 0000000060000000
+05-03 23:37:32.986  7113  7113 F DEBUG   :
+05-03 23:37:32.986  7113  7113 F DEBUG   : backtrace:
+05-03 23:37:32.986  7113  7113 F DEBUG   :     #00 pc 000000000004fb2c  /system/lib64/libc.so (offset 0x1c000)
+05-03 23:37:32.986  7113  7113 F DEBUG   :     #01 pc 000000000004cf4c  /system/lib64/libc.so (offset 0x1c000)
+```
+
 On the DBI section, we will walk you through on how to bypass these checks by instrumenting the app in different manners. The best part is that we will use `Frida` to bypass the anti-frida checks. That's is priceless! Isn't it?
 
 
