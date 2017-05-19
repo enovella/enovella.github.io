@@ -11,7 +11,7 @@ categories: [android, reverse]
 *"An Android crackme arose from hell. It doesn't make prisoners"*
 </div>
 
-This post details several ways of solving the level 3 of the Android crackmes released by the OWASP guys (Bernhard Mueller).
+This post details several ways of solving the level 3 of the Android crackmes released by the OWASP guys (Bernhard Mueller). To begin with, a hardened APK is provided and the main goal is to extract a hidden secret within the app.
 
 **Security mechanisms in UnCrackable Level3:**
 
@@ -21,7 +21,7 @@ We have detected the following protections on the mobile application:
 - Java anti-debugging
 - Java integrity checks
 - Java root checks
-- Native anti-DBI
+- Native anti-DBI (Dynamic Binary Instrumentation)
 - Native anti-debugging
 - Native integrity checks of the Dalvik bytecode
 - Native obfuscation (only a bit of symbol stripping and the function protecting the secret)
@@ -81,7 +81,7 @@ The following list illustrates different tools that could be used with the same 
             * `BytecodeViewer` (including various decompilers such as `Procyon`, `JD-GUI`, `CFR`,...).
             * `Jadx-gui`.
             * `JEB`.
-* Dynamic binary instrumentation (DBI) framework:
+* Dynamic binary instrumentation framework:
     - `Frida`.
     - `Xposed`.
 
