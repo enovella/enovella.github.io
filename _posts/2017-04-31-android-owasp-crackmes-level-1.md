@@ -11,7 +11,7 @@ categories: [android, reverse]
 *"UnCrackable App for Android Level 1. This app holds a secret inside. Can you find it?"*
 </div>
 
-This post details a way of solving the level 1 of Android crackmes released by the OWASP guys. Assuming you want to reproduce this write-up, let's make sure you know about binary disassemblers, decompilers, bytecode and crackmes before reading this post.
+This post details several ways of solving the level 1 of the Android crackmes released by the OWASP guys (Bernhard Mueller). To begin with, a hardened APK is provided and the main goal is to extract a hidden secret from the app.
 
 **Requirements: What do we need?**
 
@@ -30,7 +30,7 @@ This post details a way of solving the level 1 of Android crackmes released by t
 
 **My Solution:**
 
-This challenge can be solved in many different ways. Though, I decided to approach it in dynamic way by performing dynamic binary instrumentation with `Frida`.
+This challenge can be solved in so many different ways. Though, I decided to approach it in a dynamic way by performing dynamic binary instrumentation (DBI) with `Frida`.
 
 ```java
 Java.perform(function () {
