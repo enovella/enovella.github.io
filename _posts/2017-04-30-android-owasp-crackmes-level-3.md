@@ -11,7 +11,7 @@ categories: [android, reverse]
 *"An Android crackme arose from hell. It doesn't make prisoners"*
 </div>
 
-This post details several ways of solving the level 3 of the Android crackmes released by the OWASP guys (Bernhard Mueller). To begin with, a hardened APK is provided and the main goal is to extract a hidden secret within the app.
+This post details several ways of solving the level 3 of the Android crackmes released by the OWASP guys (Bernhard Mueller). To begin with, a hardened APK is provided and the main goal is to extract a hidden secret from the app.
 
 **Security mechanisms in UnCrackable Level3:**
 
@@ -45,12 +45,12 @@ To begin with, consider the remarks below before analyzing the APK:
 
 **Possibles solutions:**
 
-This challenge could be solved in many ways. First of all we need to know what the application does underneath. The app performs a verification of the user input against a secret hidden within the application. Basically, by verifying the user input against a Java and native secret xored with each other. The verification is done at the native level after sending the Java secret data through the JNI bridge to the native library. Actually, the verification is a simple `strncmp` with the user input and the `xor` operation of the secrets. The pseudo-code of the verification is as follows: (names are given by me)
+This challenge could be solved in so many ways. First of all, we need to know what the application does underneath. Basically, the app performs a verification with user input and a secret hidden within the application. This is done by verifying the user input against a Java and native secret that are xored with each other. The verification is done at the native level after sending the Java secret through the JNI bridge to the native library. In fact, the verification is a simple `strncmp` with the user input and the `xor` operation of the secrets. The pseudo-code of the verification is as follows: (names are given by me)
 ```c
 strncmp_with_xor(user_input_native, native_secret, java_secret) == 24;
 ```
 
-Therefore, we need to extract the two secrets to determine the right user input that display the message of success. The Java secret can be recovered very straightforward just by decompiling the APK. However, the native secret cannot be easily recovered and thus statically reverse engineering the code does not seem to be a smart idea. Some kind of hooking or symbolic execution would be a way clever idea instead of going for pure static reverse engineering. For extracting such secrets, my initial thoughts were performing:
+Therefore, we need to extract the two secrets to determine the right user input that displays the message of success. The Java secret can be recovered very straightforward just by decompiling the APK. However, the native secret cannot be easily recovered and just statically reverse engineering the code can be rather tedious and time-consuming. The native function conceals the secret by obfuscation which makes tough a pure static reverse engineering approach. However, hooking or symbolic execution might be a way clever idea. For extracting such secrets, my initial thoughts were performing:
 
 * static reverse engineering of the Dalvik and native code plus code emulation with `Unicorn`.
 * static reverse engineering of the Dalvik and native code plus symbolic execution by using `angr`.
@@ -89,7 +89,7 @@ My selection of tools was as such; `Frida` for performing dynamic analysis, `Hex
 
 
 # Extracting the hidden secret
-Let's walk through how we can extract both secrets by reverse-engineering and instrumenting the target application. Note that this needs to be reversed first and then instrumented at the Java and native level. The structure of this post is split in four sections:
+Let's walk through how we can extract both secrets by reverse-engineering and instrumenting the target application. Note that this needs to be first reversed  and then instrumented at the Java and native level. The structure of this post is split in four sections:
 
 * Reverse-engineering Dalvik bytecode.
 * Reverse-engineering native code.
@@ -101,7 +101,7 @@ Let's walk through how we can extract both secrets by reverse-engineering and in
 First of all, several files need to be unpacked from the APK to be reverse engineered later on. For doing that you can use `apktool` or `7zip`. Once the APK is unpacked, two files are very important to follow this post. These files are:
 
 * `./classes.dex` contains the Dalvik bytecode.
-* `./lib/arm64-v8a/libfoo.so` is a native library that contains ARM64 assembly code. We refer to this when talking about native code during this post (feel free to use the x86/ARM32 code if preferred). As I was running the app in a Nexus5X, the library to reverse engineer was the compiled for ARM64 architectures.
+* `./lib/arm64-v8a/libfoo.so` is a native library that contains ARM64 assembly code. We refer to this when talking about native code during this post (feel free to use the x86/ARM32 code if preferred). As I was running the app in a Nexus5X, the library to reverse engineer was the compiled for the ARM64 architecture.
 
 <div style="text-align:center" markdown="1">
 ![1](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/package-tree.png "APK packages overview"){: .center-image }
