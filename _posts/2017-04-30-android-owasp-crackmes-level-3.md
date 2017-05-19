@@ -502,7 +502,7 @@ int anti_debug()
 }
 ```
 
-The same author of this challenge has written an amazing post explaining how to perform the self-debugging technique. This exploits the fact that only one debugger can attach to a process at any one time. To investigate how this works deeper, please take a peek at the references cause I will not re-explain the same here.
+The same author of this challenge has written an amazing post explaining how to perform the [self-debugging technique](http://www.vantagepoint.sg/blog/89-more-android-anti-debugging-fun). This exploits the fact that only one debugger can attach to a process at any one time. To investigate how this works deeper, please take a peek at his blog cause I will not re-explain the same here.
 
 Effectively, if we run the application with a debugger attached to it then we can see two threads are launched and the application crashes.
 ```bash
@@ -515,7 +515,7 @@ u0_a92    7614  7593  1585956 37604 ptrace_sto 7f99b37e3c t sg.vantagepoint.uncr
 
 At this moment, we need to hide that our phone is rooted. The normal way of bypassing these checks with `Frida` would have been writing hooks for such functions. Though, an issue came up when placing my hooks on the method `onCreate()` of the MainActivity. Basically, `Frida` was not capable of intercepting the method `onCreate()` at the right moment. Further info can be found at [frida-Java issue #29](https://github.com/frida/frida-java/issues/29).
 
-However, we can think of different manners to bypass these checks. What about if we take over the control of the system call `exit()`? Doing so, it would allow us to do not spend time bypassing the Java security mechanisms and after hooking the method `exit`, we could continue interacting with the application as if no checks had been. For that purpose, the following hook can work:
+However, we can think of different manners to bypass these checks. What about if we take over the control of the system call `exit()`?  Doing so, it would allow us to do not spend time bypassing the Java security mechanisms and after hooking the method `exit`, we could continue interacting with the application as if no checks had beem activated. For that purpose, the following hook can work:
 
 ```java
 Java.perform(function () {
