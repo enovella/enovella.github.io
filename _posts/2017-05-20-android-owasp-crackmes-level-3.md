@@ -844,7 +844,7 @@ The secret is: making owasp great again
 *Secret: **making owasp great again***
 </div>
 
-The source code of all the hooks can be found at my GitHub page in the `androidtrainings` repository. Salud!
+The source code of all the hooks can be found at my GitHub page in the [`androidtrainings` repository](https://github.com/enovella/androidtrainings/tree/master/owasp-crackmes).
 
 **Conclusions:**
 * None application is `UnCrackable` (or 100% secure).
