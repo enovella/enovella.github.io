@@ -848,17 +848,17 @@ The source code of all the hooks can be found at my GitHub page in the [`android
 
 **Conclusions:**
 * None application is `UnCrackable` (or 100% secure).
-* `Frida` rocks! We overcame pretty much all the countermeasures on our way in order to obtain the valid secret. Anti-frida libc-based techniques were bypassed by hooking with `Frida`. This allowed us to bypass the security checks in different manners and also to debug the application at runtime. Just a comment, but the author of `Frida`,[@oleavr](https://twitter.com/oleavr) who says that sometimes fixes `Frida` by instrumenting it with `Frida`. This is so amazing!
+* `Frida` rocks! We overcame pretty much all the countermeasures on our way in order to obtain the valid secret. Anti-frida libc-based techniques were bypassed by hooking with `Frida`. This allowed us to bypass the security checks in different manners and also to debug the application at runtime. Just a comment, but the author of `Frida`, [@oleavr](https://twitter.com/oleavr) says that sometimes fixes `Frida` by instrumenting it with `Frida`. This is so amazing!
 * Initial reverse-engineering was required before placing `Frida` hooks.
 * Unlike the Dalvik code, native code can be more tough to deal with.
-* Native compilers can optimize too much and therefore introduce unintended bugs or behaviors.
+* Native compilers can optimize too much and therefore introduce unintended bugs or behaviors. Further info in the appendix.
 * Bernhard Mueller: Thanks a lot for the challenge! It was so much fun to solve it. Can we expect UnCrackable Level4 to be fully anti-`Frida`? Looking forward to it!
 
 That's all folks! Please comment the way you solved the challenge as well as give me any feedback by posting some comments on the blog. See you around!
 
 # Extra: Compiler optimizations.
 
-I had to rewrite the whole write-up after Bernhard Mueller and I detected some problems with the compilation flags in the native library. Just for your information, the two code snippets shown below are the decompilation of the main native function. Please note that all the static operations to hide the final value were optimized and removed by the compiler.
+I had to rewrite the whole write-up after Bernhard Mueller and I detected some problems with the compilation flags in the native library. Just for your information, the two code snippets shown below are the decompilation of the main native function. Please note that all the static operations to hide the final value were optimized and removed by the compiler. Therefore, the native secret is visible and the challenge could be solved just by doing pure static analysis.
 
 
 **Version 1:**
@@ -912,7 +912,7 @@ LABEL_8:
 
 **Version 2:**
 
-There was a function, which I renamed to `protect_secret`, that was performing a bunch of obfuscated operations to thwart attackers from statically reverse engineer the code. However, in the prologue the native secret was fully leaked.
+There was a function, which I renamed to `protect_secret`, that was performing a bunch of obfuscated operations to thwart attackers from static reverse engineer the code. However, in the prologue the native secret was entirely leaked.
 ```c
 _DWORD *__fastcall protect_secret(_DWORD *secret)
 {
