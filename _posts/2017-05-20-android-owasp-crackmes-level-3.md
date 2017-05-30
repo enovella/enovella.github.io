@@ -515,7 +515,7 @@ u0_a92    7614  7593  1585956 37604 ptrace_sto 7f99b37e3c t sg.vantagepoint.uncr
 
 At this moment, we need to hide that our phone is rooted. The normal way of bypassing these checks with `Frida` would have been writing hooks for such functions. Though, an issue came up when placing my hooks on the method `onCreate()` of the MainActivity. Basically, `Frida` was not capable of intercepting the method `onCreate()` at the right moment. Further info can be found at [frida-Java issue #29](https://github.com/frida/frida-java/issues/29).
 
-However, we can think of different manners to bypass these checks. What about if we take over the control of the system call `exit()`?  Doing so, it would allow us to do not spend time bypassing the Java security mechanisms and after hooking the method `exit`, we could continue interacting with the application as if no checks had beem activated. For that purpose, the following hook can work:
+However, we can think of different manners to bypass these checks. What about if we take over the control of the system call `exit()`?  Doing so, it would allow us to do not spend time bypassing the Java security mechanisms and after hooking the method `exit`, we could continue interacting with the application as if no checks had been activated. For that purpose, the following hook can work:
 
 ```java
 Java.perform(function () {
@@ -606,7 +606,7 @@ The `strstr` hook worked like a charm! We are now undetectable for the applicati
 
 **Solution 2: Replacing the native function `pthread_create` and disabling the security threads**
 
-If we look at the cross-references to `pthread_create`, then we realize that all the references are the callbacks we want to influence. See more in the next figure:
+If we look at the cross-references to `pthread_create`, then we realize that all the references are the callbacks we want to influence to. See more in the next figure:
 <div style="text-align:center" markdown="1">
 ![3](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/pthread_create.png "Cross-references to pthread_create"){: .center-image }
 {:.image-caption}
@@ -848,7 +848,7 @@ The source code of all the hooks can be found at my GitHub page in the `androidt
 
 **Conclusions:**
 * None application is `UnCrackable` (or 100% secure).
-* `Frida` rocks! We overcame pretty much all the countermeasures on our way in order to obtain the valid secret. Anti-frida libc-based techniques were bypassed by hooking with `Frida`. This allowed us to bypass the security checks in different manners and also to debug the application at runtime. Just a comment, but the author of `Frida` [@oleavr](https://twitter.com/oleavr) says that sometimes fixes `Frida` by instrumenting it with `Frida`. This is so amazing!
+* `Frida` rocks! We overcame pretty much all the countermeasures on our way in order to obtain the valid secret. Anti-frida libc-based techniques were bypassed by hooking with `Frida`. This allowed us to bypass the security checks in different manners and also to debug the application at runtime. Just a comment, but the author of `Frida`,[@oleavr](https://twitter.com/oleavr) who says that sometimes fixes `Frida` by instrumenting it with `Frida`. This is so amazing!
 * Initial reverse-engineering was required before placing `Frida` hooks.
 * Unlike the Dalvik code, native code can be more tough to deal with.
 * Native compilers can optimize too much and therefore introduce unintended bugs or behaviors.
