@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-I am security analyst at Riscure. Currently evaluating NFC mobile payments (HCE), content protection and embedded devices.
+I am a security consultant at the Synopsys Software Integrity Group (SIG) team in the UK (London). Currently evaluating mobile payments, embedded devices and all related with software security.
 
 email: ednolo [at] inf.upv.es
 
