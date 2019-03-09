@@ -20,6 +20,8 @@ Hacker, chessplayer, security enthusiast, swimmer, dreamer
 ### Specialized in
 
 - Android Mobile Reverse Engineering (Cloud-based payments and DRM)
+- Source code review (C/C++/Java/JavaCard)
+- Embedded Security (Smartcards, routers, smart-meters, IOT devices,...)
 
 ### Computer Skills
 - __Software__: Java, Python, C, JavaCard, Bash, C#, Perl, HTML, JavaScript, Visual Basic,
@@ -31,13 +33,13 @@ Hacker, chessplayer, security enthusiast, swimmer, dreamer
             dumping, soldering skills
 
 - __Tools__:
-    - `RE`: IDA Pro + API idapython, Radare2 + r2pipe API, Frida, Xposed, JEB, Android RE tools,
+    - `RE`: IDA Pro (idapython), Radare2 (r2pipe API), Frida, Xposed, JEB, Android RE tools,
           GDB (gef), Binary ninja, Ghidra
     - `Network`: Burp, Nmap, sqlmap, aircrack-ng, and Kali toolbox
     - `Fuzzing`: Defensics (Synopsys), AFL
     - `Others`: Android Studio, IntelliJ IDEA, Eclipse IDE, AVR Studio, QEMU, Hashcat, Truecrypt,
               VMware, Wireshark, Kali linux, libnfc, RFIDIOt, OpenOCD, Texmaker, Git, svn, hg,
-              all *NIX shell tools, Gimp
+              all \*NIX shell tools, Gimp
 ## Education
 
 `2012-2015`
