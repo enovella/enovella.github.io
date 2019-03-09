@@ -40,6 +40,7 @@ Hacker, chessplayer, security enthusiast, swimmer, dreamer
     - `Others`: Android Studio, IntelliJ IDEA, Eclipse IDE, AVR Studio, QEMU, Hashcat, Truecrypt,
               VMware, Wireshark, Kali linux, libnfc, RFIDIOt, OpenOCD, Texmaker, Git, svn, hg,
               any shell-like tools, Gimp
+
 ## Education
 
 `2012-2015`
