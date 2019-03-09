@@ -39,7 +39,7 @@ Hacker, chessplayer, security enthusiast, swimmer, dreamer
     - `Fuzzing`: Defensics (Synopsys), AFL
     - `Others`: Android Studio, IntelliJ IDEA, Eclipse IDE, AVR Studio, QEMU, Hashcat, Truecrypt,
               VMware, Wireshark, Kali linux, libnfc, RFIDIOt, OpenOCD, Texmaker, Git, svn, hg,
-              all \*NIX shell tools, Gimp
+              any shell-like tools, Gimp
 ## Education
 
 `2012-2015`
