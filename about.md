@@ -74,7 +74,7 @@ Argentina](https://enovella.github.io/mips/reverse/routers/wireless/2017/08/20/c
 
 `2012` __3rd position Crypto-challenge in my Faculty__ [Breaking easy cryptograms](http://www.securityartwork.es/2012/05/25/premios-concurso-de-criptografia)
 
-`2010` __Well-known vulnerability__ [Reverse-engineering the default WPA key generation algorithm for Telefonica Comtrend routers in Spain](http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2012-6371)
+`2010` __Well-known vulnerability__ [Reverse-engineering the default WPA key generation algorithm for Telefonica Comtrend routers in Spain](https://foro.seguridadwireless.net/index.php?pretty;board=desarrollo-112;topic=fallo-de-seguridad-en-routers-comtrend-full-disclosure)
 
 ## Occupation
 
