@@ -105,7 +105,7 @@ in software also known as White-box cryptography. Occasionally I evaluate MicroS
 certifications on the Trusted Execution Environment (TEE) area where the main goal is to find
 memory corruption bugs and exploit them until gaining code execution. Another of my skills is
 in reviewing the hardware and software security of gas smart meters, modems and any other
-embedded device which  may come into my hands
+embedded device which may come into my hands.
 
 `2014-2015` __Fox-IT__, Delft, The Netherlands
 
