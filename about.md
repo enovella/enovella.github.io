@@ -97,7 +97,7 @@ Security Analyst
 Performing security evaluations for various products in the mobile payment and content
 protection markets. Concretely, evaluating satellite receivers (Pay-TV), Digital Right Management
 systems and Android mobile payment applications (mainly Host Card Emulation). My regular work
-consists of performing dynamic binary instrumentation and evaluatng the security mechanisms
+consists of performing dynamic binary instrumentation and evaluating the security mechanisms
 (anti -root,-debugging,-emulation,…) on Android mobile banking apps. One of my goals is to
 deobfuscate binary code and fight against hackers. In addition I assess the robustness of
 the architecture design and attempt to break the security of obfuscated ciphers implemented
