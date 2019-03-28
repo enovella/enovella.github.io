@@ -96,16 +96,16 @@ Security Analyst
 
 Performing security evaluations for various products in the mobile payment and content
 protection markets. Concretely, evaluating satellite receivers (Pay-TV), Digital Right Management
-systems and Android mobile payment applications (mainly Host Card Emulation). On my
-daily work, I perform dynamic binary instrumentation and evaluate the security mechanisms
-(anti -root,-debugging,-emulation,...) on Android mobile banking apps. Also, my goal is to
-de-obfuscate binary code and fight against packers. Additionally, I assess the robustness of the
-architecture design and attempt to break the security of obfuscated ciphers implemented in
-software also known as White-box cryptography. From time to time, I am evaluating MicroSoft
-PlayReady certifications on the Trusted Execution Environment (TEE) area where the main
-goal is to find memory corruption bugs and exploit them until gaining code execution. Besides
-that, reviewing the hardware and software security of gas smart meters, modems and any other
-embedded device comes into my hands.
+systems and Android mobile payment applications (mainly Host Card Emulation). My regular work
+consists of performing dynamic binary instrumentation and evaluatng the security mechanisms
+(anti -root,-debugging,-emulation,…) on Android mobile banking apps. One of my goals is to
+deobfuscate binary code and fight against hackers. In addition I assess the robustness of
+the architecture design and attempt to break the security of obfuscated ciphers implemented
+in software also known as White-box cryptography. Occasionally I evaluate MicroSoft PlayReady
+certifications on the Trusted Execution Environment (TEE) area where the main goal is to find
+memory corruption bugs and exploit them until gaining code execution. Another of my skills is
+in reviewing the hardware and software security of gas smart meters, modems and any other
+embedded device which  may come into my hands
 
 `2014-2015` __Fox-IT__, Delft, The Netherlands
 
