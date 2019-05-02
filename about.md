@@ -61,7 +61,6 @@ __I.E.S Abastos, Valencia, Spain__
 
 ## Awards
 
-
 `2015` __Best Student Paper at Usenix WOOT (Washington, USA)__ [Scrutinizing WPA2 Password Generating Algorithms in Wireless Routers](https://www.usenix.org/conference/woot15/workshop-program/presentation/lorente)
 
 `2015` __CVE-2015-0558__ [Reverse-engineering the default WPA key generation algorithm for Pirelli routers in
@@ -78,7 +77,13 @@ Argentina](https://enovella.github.io/mips/reverse/routers/wireless/2017/08/19/c
 
 ## Occupation
 
-`2018-present`
+`2019-present`
+__NowSecure__, London, United Kingdom / Valencia, Spain
+
+Independent Mobile Security Researcher
+- *Keywords*: Android Mobile security, Dynamic Binary Instrumentation (Frida), Reverse-engineering (Radare2)
+
+`2018-2019` (10 mo)
 __Synopsys__, London, United Kingdom
 
 Senior Security Consultant
@@ -86,7 +91,7 @@ Senior Security Consultant
             Reverse-engineering of Android Fingerprint Trustlets (TEE & TrustZone), ARM assembly (32-64 bits), Source code review (C/C++/Java/Python),
             IOT hacking & fuzzing (Defensics)
 
-`2015-2018`
+`2015-2018` (3 years 2mo)
 __Riscure__, Delft, The Netherlands
 
 Security Analyst
@@ -107,7 +112,8 @@ memory corruption bugs and exploit them until gaining code execution. Another of
 in reviewing the hardware and software security of gas smart meters, modems and any other
 embedded device which may come into my hands.
 
-`2014-2015` __Fox-IT__, Delft, The Netherlands
+`2014-2015` (7mo)
+__Fox-IT__, Delft, The Netherlands
 
 Intern. Masters Thesis; "Hardware Reverse-engineering"
 - *Keywords*: Hardware reverse engineering, wirelessHART protocol, SCADA security, wireless sensor networks, industrial systems,
