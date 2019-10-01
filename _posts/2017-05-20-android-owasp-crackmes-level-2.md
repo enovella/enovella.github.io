@@ -16,11 +16,11 @@ This post details a way of solving the level 2 of Android crackmes released by t
 **Requirements: What do we need?**
 
 * Android phone or emulator to run the crackme APK
-* Android decompiler of your preference to obtain Java code. (JADX-gui, JEB...)
-* Dynamic binary instrumentation of your preference (frida)
-* Disassembler (Radare2)
-* Native decompiler (Radare2 plugin r2ghidra)
-* The pinch of salt of the all magic: r2frida, a Radare2 plugin that combines static and dynamic analysis.
+* Android decompiler of your preference to obtain Java code. (`JADX-gui`, JEB...)
+* Dynamic binary instrumentation of your preference (`Frida`)
+* Disassembler (`Radare2`)
+* Native decompiler (Radare2 plugin `r2ghidra`)
+* The pinch of salt of the all magic: `r2frida`, a Radare2 plugin that combines static and dynamic analysis.
 * Time and a bit of thinking
 
 
@@ -35,7 +35,7 @@ This post details a way of solving the level 2 of Android crackmes released by t
 
 This challenge can be solved in many different ways. Though, I decided to approach it in dynamic way by performing dynamic binary instrumentation with `r2frida`. Also, we'll show a bit of static analysis with Radare2.
 
-After reversing the application, we find a lazy trick to avoid bypassing all the root detections one by one. In this manner, we hijack the control of the function that closes the application and warns us that this is unacceptable. Yeah yeah Blah Blah Blah `Root detected! The app is now going to to exit`... We'll see the toast with the message of rooted detected. Just press OK, the application won't be killed. First challenge solved with the following Frida hook:
+After reversing the application with JADX, we find a lazy trick to avoid bypassing all the root detections one by one. In this manner, we hijack the control of the function that closes the application and warns us that this is unacceptable. Yeah yeah Blah Blah Blah `Root detected! The app is now going to to exit`... We'll see the toast with the message of rooted detected. Just press OK, the application won't be killed. First challenge solved with the following Frida hook:
 
 ```java
 Java.perform(function () {
@@ -128,7 +128,7 @@ exit:
 }
 ```
 
-The above pseudocode indicates that the native verification will return `1` if the input string length is 23 and the comparison returns `0`. Let's hook it then! Now the goal is only to show the strncmp from the target native library. Therefore, we parse the backtrace of all the strncmp's functions and print the input arguments only when it comes from `libfoo.so`. The Frida code could be:
+The above pseudocode indicates that the native verification will return `1` if the input string length is 23 and the comparison returns `0`. Let's hook it then! Now the goal is only to show the `strncmp` from the target native library. Therefore, we parse the backtrace of all the strncmp's functions and print the input arguments only when it comes from `libfoo.so`. The Frida code could be:
 
 ```java
 // Filename: owasp2.js
@@ -160,7 +160,7 @@ Java.perform(function () {
 });
 ```
 
-Now, we can now intercept the input arguments to the comparison function in the native library, all this at runtime with `r2frida`:
+Now, we can intercept the function arguments of the comparison in the native library, all this at runtime with `r2frida`:
 ```sh
 [edu@xps ~] >  r2 frida://spawn/usb//owasp.mstg.uncrackable2
  -- This computer has gone to sleep.
