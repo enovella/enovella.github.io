@@ -37,7 +37,7 @@ This challenge can be solved in many different ways. Though, I decided to approa
 
 After reversing the application, we find a lazy trick to avoid bypassing all the root detections one by one. In this manner, we hijack the control of the function that closes the application and warns us that this is unacceptable. Yeah yeah Blah Blah Blah `Root detected! The app is now going to to exit`... We'll see the toast with the message of rooted detected. Just press OK, the application won't be killed. First challenge solved with the following Frida hook:
 
-```c
+```java
 Java.perform(function () {
   var sysexit = Java.use("java.lang.System");
   sysexit.exit.overload("int").implementation = function(a0) {
@@ -47,7 +47,7 @@ Java.perform(function () {
 ```
 
 Time to find the string comparison in the native library. Fire the bin up into Radare2 (r2) and decompile the function `CodeCheck_bar`:
-```c
+```sh
 [edu@xps arm64-v8a] >  r2 -A libfoo.so
 [x] Analyze all flags starting with sym. and entry0 (aa)
 [x] Analyze function calls (aac)
@@ -130,7 +130,7 @@ exit:
 
 The above pseudocode indicates that the native verification will return `1` if the input string length is 23 and the comparison returns `0`. Let's hook it then! Now the goal is only to show the strncmp from the target native library. Therefore, we parse the backtrace of all the strncmp's functions and print the input arguments only when it comes from `libfoo.so`. The Frida code could be:
 
-```c
+```java
 // Filename: owasp2.js
 function backtrace(c) {
     return (Thread.backtrace(c.context, Backtracer.ACCURATE)
@@ -161,7 +161,7 @@ Java.perform(function () {
 ```
 
 Now, we can now intercept the input arguments to the comparison function in the native library, all this at runtime with `r2frida`:
-```c
+```sh
 [edu@xps ~] >  r2 frida://spawn/usb//owasp.mstg.uncrackable2
  -- This computer has gone to sleep.
 [0x00000000]> \. /tmp/owasp2.js
@@ -216,8 +216,6 @@ undefined8 sym.fun.Java_sg_vantagepoint_uncrackable2_CodeCheck_bar(int32_t arg3,
         return uVar4;
     }
     func_0x00726a22c840();
-    // WARNING: Bad instruction - Truncating control flow here
-    halt_baddata();
 }
 ```
 
