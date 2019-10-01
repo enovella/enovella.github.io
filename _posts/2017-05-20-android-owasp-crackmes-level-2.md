@@ -218,6 +218,7 @@ undefined8 sym.fun.Java_sg_vantagepoint_uncrackable2_CodeCheck_bar(int32_t arg3,
     func_0x00726a22c840();
 }
 ```
+The best thing of r2frida is the combination of tools such as Frida and Ghidra, all in one interactive shell. Never was that good! 
 
 <div style="text-align:center" markdown="1">
 ![1](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/owasp-level2.png "Flag 1"){: .center-image }
@@ -225,7 +226,7 @@ undefined8 sym.fun.Java_sg_vantagepoint_uncrackable2_CodeCheck_bar(int32_t arg3,
 *Flag1*
 </div>
 
-
+Radare2 and (F|Gh)rida, Better together!
 
 **References:**
 
