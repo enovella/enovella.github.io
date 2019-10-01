@@ -29,7 +29,7 @@ This post details a way of solving the level 2 of Android crackmes released by t
 * Anti-debugging and anti-rooting checks are in place at the Java level. We do not need to bypass all of them but get the flag
 * Dynamic binary instrumentation is the approach chosen to obtain the secret inside the application
 * Repackaging the application and patching out the security checks might be also possible but it is not covered in this write-up
-
+* Installation, and basic explanations are avoided in this post. There are very good ones in the Internet.
 
 **My Solution:**
 
