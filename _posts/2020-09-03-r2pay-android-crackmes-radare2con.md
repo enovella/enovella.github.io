@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Android Hardened CrackMe App: Radare2 Pay"
+title:  "Android CrackMe for R2con CTF: Radare2 Pay"
 date:   2020-09-03 17:45:03 +0700
 categories: [android, reverse]
 ---
@@ -11,7 +11,12 @@ categories: [android, reverse]
 *"The Radare2 community always dreamed with its decentralized and free currency to allow r2 fans to make payments in places and transfer money between r2 users. A debug version has been developed and it will be supported very soon in many stores and websites. Can you verify that this is cryptographically unbreakable?"*
 </div>
 
-Intended to be similar to popular mobile payment applications such as Google Pay, the Radare2 Pay app is difficult to crack. It features layers and layers of obfuscation and protection and anti-rooting technology in order to delay attacks. The developers used white box cryptography and created their own version of Runtime Application Self-Protection (RASP) with anti-Frida protections to make it harder to recover the payment keys.
+**Authors:**
+
+- [Gautam Arvind](https://twitter.com/darvincisec)
+- [Eduardo Novella](https://twitter.com/enovella_)
+
+Radare2Pay Android CrackMe aims at being similar to popular mobile payment applications such as Google Pay, the Radare2 Pay app is difficult to crack. It features layers and layers of obfuscation and protection and anti-rooting technology in order to delay attacks. The developers used white box cryptography and created their own version of Runtime Application Self-Protection (RASP) with anti-Frida protections to make it harder to recover the payment keys.
 
 **Security mechanisms:**
 
@@ -29,17 +34,20 @@ We have implemented the following protections in the mobile application:
 - Native obfuscation
 - Runtime Application Self-Protection (RASP)
 
-
 **Before get started:**
 
 Hint: Run the APK in a non-tampered device to play a bit with the app.
 
+<div style="text-align:center" markdown="1">
+![0](https://raw.githubusercontent.com/enovella/enovella.github.io/master/static/img/_posts/r2pay2.jpg "Radare2 Pay")
+{:.image-caption}
+*"Radare2 Pay app tokenizing a r2coin"*
+</div>
+
 **Possibles solutions:**
 
-- [Solution bypassing protections using Frida/QBDI by Romain Thomas](https://www.romainthomas.fr/post/20-09-r2con-obfuscated-whitebox-part1/ "Solution by Romain Thomas").
-- [Solution whitebox key recovery using SCAMarvels by Romain Thomas](https://www.romainthomas.fr/post/20-09-r2con-obfuscated-whitebox-part2/ "Solution by Romain Thomas").
-
-
+- [Solution bypassing protections using Frida/QBDI by Romain Thomas](https://www.romainthomas.fr/post/20-09-r2con-obfuscated-whitebox-part1 "Solution by Romain Thomas").
+- [Solution whitebox key recovery using SCAMarvels by Romain Thomas](https://www.romainthomas.fr/post/20-09-r2con-obfuscated-whitebox-part2 "Solution by Romain Thomas").
 
 
 **References:**
