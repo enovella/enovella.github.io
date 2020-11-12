@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "R2con CTF Android CrackMe: Radare2 Pay"
+title:  "R2con CTF Android CrackMe: Radare2 Pay v1.0"
 date:   2020-09-03 17:45:03 +0700
 categories: [android, reverse]
 ---
@@ -18,8 +18,9 @@ categories: [android, reverse]
 
 **Summary**
 
-Radare2Pay Android CrackMe aims at being similar to popular mobile payment applications such as Google Pay, the Radare2 Pay app is difficult to crack. It features layers and layers of obfuscation and protection and anti-rooting technology in order to delay attacks. The developers used white box cryptography and created their own version of Runtime Application Self-Protection (RASP) with anti-Frida protections to make it harder to recover the payment keys. It was intentionally for the Radare2 Conference 2020 and later highly softened for the OWASP crackme series.
+Radare2Pay Android CrackMe aims at being similar to popular mobile payment applications such as Google Pay, the Radare2 Pay app is difficult to crack. It features layers and layers of obfuscation and protection and anti-rooting technology in order to delay attacks. The developers used white box cryptography and created their own version of Runtime Application Self-Protection (RASP) with anti-Frida protections to make it harder to recover the payment keys. It was intentionally developed for the Radare2 Conference 2020 and later highly softened for the OWASP crackme series.
 
+Download [R2pay here](https://github.com/enovella/androidtrainings/raw/master/owasp-crackmes/r2pay/r2pay-v1.0.apk)
 **Security mechanisms**
 
 We have implemented the following protections in the mobile application:
