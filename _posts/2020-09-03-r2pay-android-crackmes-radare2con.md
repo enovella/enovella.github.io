@@ -27,8 +27,9 @@ Download [R2pay here](https://github.com/enovella/androidtrainings/raw/master/ow
 
 There are two flags you need to figure out:
 
-1) There is a master PIN code that generates green tokens (aka r2coins) on the screen. If you see a red r2coin, then this token won't be validated by the community. You need to find out the 4 digits PIN code and the salt employed as well. Flag: r2con{PIN_NUMERIC:SALT_LOWERCASE}
-2) There is a "r2pay master key" buried in layers of obfuscation and protections. Can you break the whitebox? Flag: r2con{ascii(key)}
+- There is a master PIN code that generates green tokens (aka r2coins) on the screen. If you see a red r2coin, then this token won't be validated by the community. You need to find out the 4 digits PIN code and the salt employed as well. Flag: r2con{PIN_NUMERIC:SALT_LOWERCASE}
+
+- There is a "r2pay master key" buried in layers of obfuscation and protections. Can you break the whitebox? Flag: r2con{ascii(key)}
 
 **Security mechanisms**
 
