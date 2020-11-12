@@ -11,16 +11,17 @@ categories: [android, reverse]
 *"The Radare2 community always dreamed with its decentralized and free currency to allow r2 fans to make payments in places and transfer money between r2 users. A debug version has been developed and it will be supported very soon in many stores and websites. Can you verify that this is cryptographically unbreakable?"*
 </div>
 
-**Authors**
-
-- [Gautam Arvind](https://twitter.com/darvincisec)
-- [Eduardo Novella](https://twitter.com/enovella_)
-
 **Summary**
 
 Radare2Pay Android CrackMe aims at being similar to popular mobile payment applications such as Google Pay, the Radare2 Pay app is difficult to crack. It features layers and layers of obfuscation and protection and anti-rooting technology in order to delay attacks. The developers used white box cryptography and created their own version of Runtime Application Self-Protection (RASP) with anti-Frida protections to make it harder to recover the payment keys. It was intentionally developed for the Radare2 Conference 2020 and later highly softened for the OWASP crackme series.
 
 Download [R2pay here](https://github.com/enovella/androidtrainings/raw/master/owasp-crackmes/r2pay/r2pay-v1.0.apk)
+
+**Authors**
+
+- [Gautam Arvind](https://twitter.com/darvincisec)
+- [Eduardo Novella](https://twitter.com/enovella_)
+
 **Security mechanisms**
 
 We have implemented the following protections in the mobile application:
