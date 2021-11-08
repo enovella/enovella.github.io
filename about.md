@@ -20,12 +20,13 @@ Hacker, chessplayer, security enthusiast, swimmer, dreamer
 ### Specialized in
 
 - Android Mobile Reverse Engineering (Cloud-based payments and DRM)
+- Android Code Obfuscation (RASP, MBA, anti-tampering, CFG flattening, ...)
 - Source code review (C/C++/Java/JavaCard)
 - Embedded Security (Smartcards, routers, smart-meters, IOT devices,...)
 
 ### Computer Skills
-- __Software__: Java, Python, C, JavaCard, Bash, C#, Perl, HTML, JavaScript, Visual Basic,
-            Assembler (Intel,MIPS,ARM,AVR,Dalvik), Matlab, Mathematica, VHDL, Yara, LATEX,
+- __Software__: Java, Python, JavaCard, Bash, C/C++/C#, HTML, JS/TypeScript, Visual Basic,
+            Assembler (Intel,MIPS,ARM32/64,AVR,Dalvik), Matlab, Mathematica, VHDL, Yara, LATEX,
             Markdown
 
 - __Hardware__: Side channel & Fault injection attacks, JTAG, UART, SPI, SWD, I2C, TI MSP430Fxx,
@@ -33,13 +34,13 @@ Hacker, chessplayer, security enthusiast, swimmer, dreamer
             dumping, soldering skills
 
 - __Tools__:
-    - `RE`: IDA Pro (idapython), Radare2 (r2pipe API), Frida, Xposed, JEB, Android RE tools,
-          GDB (gef), Binary ninja, Ghidra
-    - `Network`: Burp, Nmap, sqlmap, aircrack-ng, and Kali toolbox
+    - `RE`: IDA Pro (idapython), Ghidra, Radare2 (r2pipe API), Frida, Xposed, JEB, Android RE tools,
+          GDB (gef), Binary ninja
+    - `Network`: Burp, mitmproxy, Nmap, sqlmap, aircrack-ng, and Kali toolbox
     - `Fuzzing`: Defensics (Synopsys), AFL
-    - `Others`: Android Studio, IntelliJ IDEA, Eclipse IDE, AVR Studio, QEMU, Hashcat, Truecrypt,
+    - `Others`: Android Studio, VS Code, AVR Studio, QEMU, Hashcat, Truecrypt,
               VMware, Wireshark, Kali linux, libnfc, RFIDIOt, OpenOCD, Texmaker, Git, svn, hg,
-              any shell-like tools, Gimp
+              any shell-like tools
 
 ## Education
 
@@ -81,15 +82,13 @@ Argentina](https://enovella.github.io/mips/reverse/routers/wireless/2017/08/19/c
 __NowSecure__, London, United Kingdom / Valencia, Spain
 
 Independent Mobile Security Researcher
-- *Keywords*: Android Mobile security, Dynamic Binary Instrumentation (Frida), Reverse-engineering (Radare2)
+- *Keywords*:  Mobile Security, Android/iOS, Dynamic and static analysis, Radare2, Frida, NowSecure WorkStation, Research, Engineering, Reverse-engineering, Findings, RASP bypass
 
 `2018-2019` (10 mo)
 __Synopsys__, London, United Kingdom
 
 Senior Security Consultant
-- *Keywords*: Android Mobile security (RASP), Dynamic Binary Instrumentation (Frida), Reverse-engineering (IDA Pro & Radare2),
-            Reverse-engineering of Android Fingerprint Trustlets (TEE & TrustZone), ARM assembly (32-64 bits), Source code review (C/C++/Java/Python),
-            IOT hacking & fuzzing (Defensics)
+- *Keywords*: Android Mobile security (RASP), Dynamic Binary Instrumentation (Frida), Reverse-engineering (IDA Pro & Radare2), Reverse-engineering of Android Fingerprint Trustlets (TEE & TrustZone), ARM assembly (32-64 bits), Source code review (C/C++/Java/Python), IOT hacking & fuzzing (Defensics).
 
 `2015-2018` (3 years 2mo)
 __Riscure__, Delft, The Netherlands
@@ -140,6 +139,12 @@ Visual Basic Developer
 
 ## Publications
 
+- [CyberTruck Challenge 2021 - Android security workshop for automotive students](https://github.com/nowsecure/cybertruckchallenge19)
+- [OWASP Android CrackMe: Radare2 Pay v0.9](https://github.com/OWASP/owasp-mstg/tree/master/Crackmes)
+- [R2con CTF Android CrackMe: Radare2 Pay v1.0](https://enovella.github.io/android/reverse/2020/09/03/r2pay-android-crackmes-radare2con.html)
+- [RadareCON 2020 - Beginners Workshop: Mobile Reverse Engineering with R2Frida](https://youtu.be/sgNDYgLyAP4?t=6486)
+- [RadareCON 2019 - Advanced Training: Mobile Reverse Engineering with R2frida](https://rada.re/con/2019/agenda.html)
+- [CyberTruck Challenge 2019 - Android security workshop for automotive students](https://github.com/nowsecure/cybertruckchallenge19)
 - [BlackHat EU 2018. APKiD: "PEiD" for Android Applications (speaker)](https://www.blackhat.com/eu-18/arsenal/schedule/index.html#apkid-34peid34-for-android-applications-13333)
 - [Contributor opensource: APKiD (2017-present). Creating Yara rules to detect obfuscators, packers, protectors and other oddities](https://github.com/rednaga/APKiD)
 - [Besides Las Vegas 2015 Conference (speaker)](https://bsideslv2015.sched.org/event/3uih/scrutinizing-wpa2-password-generating-algorithms-in-wireless-routers)
