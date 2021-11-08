@@ -139,12 +139,13 @@ Visual Basic Developer
 
 ## Publications
 
-- [CyberTruck Challenge 2021 - Android security workshop for automotive students](https://github.com/nowsecure/cybertruckchallenge19)
+- [UYBHYS 2021 France Workshop - Mobile Reverse Engineering with R2Frida](https://www.unlockyourbrain.bzh/)
+- [CyberTruck Challenge 2021 Detroit (online) - Android security workshop for automotive students](https://github.com/nowsecure/cybertruckchallenge19)
 - [OWASP Android CrackMe: Radare2 Pay v0.9](https://github.com/OWASP/owasp-mstg/tree/master/Crackmes)
-- [R2con CTF Android CrackMe: Radare2 Pay v1.0](https://enovella.github.io/android/reverse/2020/09/03/r2pay-android-crackmes-radare2con.html)
-- [RadareCON 2020 - Beginners Workshop: Mobile Reverse Engineering with R2Frida](https://youtu.be/sgNDYgLyAP4?t=6486)
-- [RadareCON 2019 - Advanced Training: Mobile Reverse Engineering with R2frida](https://rada.re/con/2019/agenda.html)
-- [CyberTruck Challenge 2019 - Android security workshop for automotive students](https://github.com/nowsecure/cybertruckchallenge19)
+- [RadareCON 2020 CTF Android CrackMe: Radare2 Pay v1.0](https://enovella.github.io/android/reverse/2020/09/03/r2pay-android-crackmes-radare2con.html)
+- [RadareCON 2020 Workshop - Beginners Workshop: Mobile Reverse Engineering with R2Frida](https://youtu.be/sgNDYgLyAP4?t=6486)
+- [RadareCON 2019 Workshop - Advanced Training: Mobile Reverse Engineering with R2Frida](https://rada.re/con/2019/agenda.html)
+- [CyberTruck Challenge 2019 Detroit - Android security workshop for automotive students](https://github.com/nowsecure/cybertruckchallenge19)
 - [BlackHat EU 2018. APKiD: "PEiD" for Android Applications (speaker)](https://www.blackhat.com/eu-18/arsenal/schedule/index.html#apkid-34peid34-for-android-applications-13333)
 - [Contributor opensource: APKiD (2017-present). Creating Yara rules to detect obfuscators, packers, protectors and other oddities](https://github.com/rednaga/APKiD)
 - [Besides Las Vegas 2015 Conference (speaker)](https://bsideslv2015.sched.org/event/3uih/scrutinizing-wpa2-password-generating-algorithms-in-wireless-routers)
