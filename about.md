@@ -11,7 +11,7 @@ permalink: /about/
 Hacker, chessplayer, security enthusiast, swimmer, dreamer
 
 <div id="webaddress">
-<a href="ednolo@inf.upv.es">Mail</a>
+<a href="foro.dudu@gmail.com">Mail</a>
 | <a href="https://github.com/enovella"> GitHub</a>
 | <a href="https://enovella.github.io/"> Blog</a>
 </div>
@@ -19,10 +19,11 @@ Hacker, chessplayer, security enthusiast, swimmer, dreamer
 
 ### Specialized in
 
-- Android Mobile Reverse Engineering (Cloud-based payments and DRM)
+- Android Mobile Reverse Engineering (Cloud-based payments, Malware, Video-games and DRM)
 - Android Code Obfuscation (RASP, MBA, anti-tampering, CFG flattening, ...)
 - Source code review (C/C++/Java/JavaCard)
-- Embedded Security (Smartcards, routers, smart-meters, IOT devices,...)
+- Mobile Security Analyst/Engineer
+- Embedded Security (Side channel & Fault injection attacks on Smartcards, Pay-TV SoCs, routers, smart-meters, IOT devices,...)
 
 ### Computer Skills
 - __Software__: Java, Python, JavaCard, Bash, C/C++/C#, HTML, JS/TypeScript, Visual Basic,
