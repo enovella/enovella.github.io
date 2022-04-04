@@ -6,12 +6,16 @@ permalink: /about/
 
 # Eduardo Novella
 
-`"It's not that I'm so smart; it's just that I stay with problems longer." – Albert Einstein`
+`"It's not that I'm so smart;`
+
+`it's just that I stay with problems longer."`
+
+` - Albert Einstein`
 
 Hacker, chessplayer, security enthusiast, swimmer, dreamer
 
 <div id="webaddress">
-| <a href="foro.dudu@gmail.com">Mail</a>
+| <a href="mailto:foro.dudu@gmail.com">Mail</a>
 | <a href="https://github.com/enovella"> GitHub</a>
 | <a href="https://enovella.github.io/"> Blog</a>
 </div>
