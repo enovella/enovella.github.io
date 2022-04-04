@@ -10,12 +10,12 @@ permalink: /about/
 
 `it's just that I stay with problems longer."`
 
-` - Albert Einstein`
+**-- Albert Einstein**
 
 Hacker, chessplayer, security enthusiast, swimmer, dreamer
 
 <div id="webaddress">
-| <a href="mailto:foro.dudu@gmail.com">Mail</a>
+  <a href="mailto:foro.dudu@gmail.com">Mail</a>
 | <a href="https://github.com/enovella"> GitHub</a>
 | <a href="https://enovella.github.io/"> Blog</a>
 </div>
