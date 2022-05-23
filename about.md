@@ -84,7 +84,7 @@ Argentina](https://enovella.github.io/mips/reverse/routers/wireless/2017/08/19/c
 ## Occupation
 
 `2019-present`
-__NowSecure__, London, United Kingdom / Valencia, Spain
+__NowSecure__, Chicago, Washington DC and Seattle (USA). Remote
 
 Independent Mobile Security Researcher
 - *Keywords*:  Mobile Security, Android/iOS, Dynamic and static analysis, Radare2, Frida, NowSecure WorkStation, Research, Engineering, Reverse-engineering, Findings, RASP bypass
